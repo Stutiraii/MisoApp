@@ -3,6 +3,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import Login from "./Login";
 import "./styles/App.css";
 import PrivateRoute from "./PrivateRoute";
+import Dashboard from "./Dashboard";
 
 function App() {
   return (
@@ -12,7 +13,7 @@ function App() {
       </nav>
       
       <Routes>
-        <Route path="/" element={<h1>Welcome to Staff Management System</h1>} />
+        <Route path="/" element={< Dashboard />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </div>
