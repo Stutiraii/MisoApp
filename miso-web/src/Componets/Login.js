@@ -21,6 +21,7 @@ function Login() {
             setError("Please verify your email before logging in.");
           } else {
             alert("Login successful!");
+            redirectToDashboard(); // Redirect to the dashboard
           }
         })
         .catch((err) => {
@@ -31,8 +32,12 @@ function Login() {
     }
   };
 
+  const redirectToDashboard = () => {
+    navigate("/Dashboard"); // Redirect to the dashboard
+  };
+
   const redirectToSignUp = () => {
-    navigate("/signup"); // Redirect to the sign-up page
+    navigate("/SignUp"); // Redirect to the sign-up page
   };
 
   return (

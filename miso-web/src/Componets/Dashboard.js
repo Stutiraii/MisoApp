@@ -9,8 +9,8 @@ function Dashboard() {
 
   return (
     <div>
-      <h2>Welcome, {currentUser ? currentUser.name : "Staff Member"}!</h2>
-      <Hours />  {/* Display the Clock In/Out button */}
+      {/* <h2>Welcome, {currentUser ? currentUser.name : "Staff Member"}!</h2> */}
+     
 <Admin />  {/* Display the Admin button */}
     </div>
   );
