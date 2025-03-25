@@ -11,7 +11,7 @@ import {
 import { getAuth } from "firebase/auth";
 import "../styles/App.css";
 
-function Admin() {
+function AdminSchedule() {
   const { db } = useFirebase();
   const auth = getAuth();
 
@@ -217,4 +217,4 @@ function Admin() {
   );
 }
 
-export default Admin;
+export default AdminSchedule;

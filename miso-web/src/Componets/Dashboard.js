@@ -1,8 +1,9 @@
 import React from "react";
 import { useFirebase } from "./firebaseContext";
-import Hours from "./Hours";  // Import the ClockInOut component
-import Admin from "./Admin";  // Import the Admin component
+import Hours from "./Hours"; // Import the ClockInOut component
+import Admin from "./AdminSchedule"; // Import the Admin component
 import "../styles/App.css";
+import AdminSchedule from "./AdminSchedule";
 
 function Dashboard() {
   const { currentUser } = useFirebase();
@@ -10,8 +11,7 @@ function Dashboard() {
   return (
     <div>
       {/* <h2>Welcome, {currentUser ? currentUser.name : "Staff Member"}!</h2> */}
-     
-<Admin />  {/* Display the Admin button */}
+      <AdminSchedule /> {/* Display the Admin button */}
     </div>
   );
 }

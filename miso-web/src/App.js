@@ -11,7 +11,7 @@ import "./styles/App.css";
 function App() {
   const [user, setUser] = useState(null);
   const auth = getAuth();
-  
+
   useEffect(() => {
     // Set up authentication state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -30,7 +30,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/dashboard" element={<PrivateRoute user={user} element={<Dashboard />} />} />
+        <Route
+          path="/dashboard"
+          element={<PrivateRoute user={user} element={<Dashboard />} />}
+        />
       </Routes>
     </div>
   );

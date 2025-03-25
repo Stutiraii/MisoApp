@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useFirebase } from "./firebaseContext"; // Import the useFirebase hook
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore"; 
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
 import "../styles/App.css";
-
 
 function SignUp() {
   const [email, setEmail] = useState("");
@@ -17,11 +19,15 @@ function SignUp() {
     e.preventDefault();
     try {
       // Create new user for sign-up
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-       // Add user to Firestore
-       await setDoc(doc(db, "users", user.uid), {
+      // Add user to Firestore
+      await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         name: `${fname} ${lname}`,
         uid: user.uid,
@@ -51,7 +57,7 @@ function SignUp() {
         <div className="auth-container">
           <h1 className="auth-heading">Sign Up Page</h1>
           {error && <p className="error-message">{error}</p>}
-          
+
           <div className="mb-3">
             <label>First name</label>
             <input
@@ -101,12 +107,19 @@ function SignUp() {
           </div>
 
           <div className="d-grid">
-            <button type="submit" className="auth-button" disabled={!email || !password}>
+            <button
+              type="submit"
+              className="auth-button"
+              disabled={!email || !password}
+            >
               Sign Up
             </button>
           </div>
 
-          <p className="toggle-text" onClick={() => window.location.href = '/login'}>
+          <p
+            className="toggle-text"
+            onClick={() => (window.location.href = "/login")}
+          >
             Already have an account? Login
           </p>
         </div>
