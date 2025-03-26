@@ -7,6 +7,8 @@ function ManageInventory() {
     const [inventory, setInventory] = useState([]);
     const [itemName, setItemName] = useState("");
     const [quantity, setQuantity] = useState(0);
+    const [minStock, setMinStock] = useState(1);
+    const [maxStock, setMaxStock] = useState(100);
 
     // Fetch inventory data on mount
     useEffect(() => {
@@ -29,12 +31,12 @@ function ManageInventory() {
     // Add new item to inventory
     const handleAddItem = async (e) => {
         e.preventDefault();
-        if (!itemName || quantity <= 0) {
-            alert("Please enter a valid item and quantity.");
+        if (!itemName || quantity < minStock || quantity > maxStock) {
+            alert("Please enter a valid item name and ensure quantity is within the allowed range.");
             return;
         }
         try {
-            await addDoc(collection(db, "inventory"), { name: itemName, quantity });
+            await addDoc(collection(db, "inventory"), { name: itemName, quantity, minStock, maxStock });
             setItemName("");
             setQuantity(0);
         } catch (error) {
@@ -43,8 +45,10 @@ function ManageInventory() {
     };
 
     // Update item quantity
-    const updateItemQuantity = async (id, newQuantity) => {
+    const updateItemQuantity = async (id, currentQuantity, change) => {
+        const newQuantity = currentQuantity + change;
         if (newQuantity < 0) return;
+
         try {
             const itemRef = doc(db, "inventory", id);
             await updateDoc(itemRef, { quantity: newQuantity });
@@ -69,6 +73,18 @@ function ManageInventory() {
                     value={quantity} 
                     onChange={(e) => setQuantity(Number(e.target.value))} 
                 />
+                <input 
+                    type="number" 
+                    placeholder="Min Stock" 
+                    value={minStock} 
+                    onChange={(e) => setMinStock(Number(e.target.value))} 
+                />
+                <input 
+                    type="number" 
+                    placeholder="Max Stock" 
+                    value={maxStock} 
+                    onChange={(e) => setMaxStock(Number(e.target.value))} 
+                />
                 <button type="submit">Add Item</button>
             </form>
 
@@ -78,6 +94,8 @@ function ManageInventory() {
                     <tr>
                         <th>Item Name</th>
                         <th>Quantity</th>
+                        <th>Min</th>
+                        <th>Max</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -85,10 +103,19 @@ function ManageInventory() {
                     {inventory.map((item) => (
                         <tr key={item.id}>
                             <td>{item.name}</td>
-                            <td>{item.quantity}</td>
+                            <td style={{ color: item.quantity < item.minStock ? "red" : "black" }}>
+                                {item.quantity} {item.quantity < item.minStock && "⚠️ Low Stock!"}
+                            </td>
+                            <td>{item.minStock}</td>
+                            <td>{item.maxStock}</td>
                             <td>
-                                <button onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>+</button>
-                                <button onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>-</button>
+                                <button 
+                                    onClick={() => updateItemQuantity(item.id, item.quantity, 1)} 
+                                    disabled={item.quantity >= item.maxStock}
+                                >
+                                    +
+                                </button>
+                                <button onClick={() => updateItemQuantity(item.id, item.quantity, -1)}>-</button>
                             </td>
                         </tr>
                     ))}

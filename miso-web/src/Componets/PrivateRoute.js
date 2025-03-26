@@ -7,7 +7,7 @@ const PrivateRoute = ({ element }) => {
 
   if (!currentUser) {
     // Redirect to login if there's no user
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   return element;  // Return the element (Dashboard) if the user is authenticated

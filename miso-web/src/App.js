@@ -4,9 +4,12 @@ import Login from "./Componets/Login";
 import SignUp from "./Componets/SignUp";
 import PrivateRoute from "./Componets/PrivateRoute";
 import Dashboard from "./Componets/Dashboard";
+import ShiftCalendar from "./Componets/ShiftCalendar";
 import AdminSchedule from "./Componets/AdminSchedule"; // Import AdminSchedule
+import ViewSchedule from "./Componets/ViewSchedule"; // Import ViewSchedule
 import ManageInventory from "./Componets/ManageInventory"; // Import ManageInventory
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 import "./styles/App.css";
 
 function App() {
@@ -41,6 +44,8 @@ function App() {
           path="/ManageInventory"
           element={<PrivateRoute user={user} element={<ManageInventory />} />}
         />
+        <Route path="/calendar" element={<ShiftCalendar />} />
+        <Route path='/ViewSchedule' element={<PrivateRoute user={user} element={<ViewSchedule />} />} />
       </Routes>
     </div>
   );

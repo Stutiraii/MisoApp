@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { collection, addDoc } from "firebase/firestore";
+import { getMessaging, getToken } from "firebase/messaging";
 
 
 // Firebase configuration
@@ -24,11 +25,16 @@ const db = getFirestore(app);
 // Create a Firebase context
 const FirebaseContext = createContext(null);
 
+// Initialize Firebase Cloud Messaging and get a reference to the service
+const messaging = getMessaging(app);
+getToken(messaging, {vapidKey: "9iOV50RgeTzLXEDAqk7dDfXTXGM3LENwjzt7bW4ElQQ"});
 
 // Firebase provider component
 export const FirebaseProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [messagingToken, setMessagingToken] = useState(null);
 
+  // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -37,8 +43,31 @@ export const FirebaseProvider = ({ children }) => {
     return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
+  // Initialize Firebase Cloud Messaging and get a reference to the service
+  useEffect(() => {
+    if (currentUser) {
+      const messaging = getMessaging(app);
+
+      // Get the FCM token
+      getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
+        .then((currentToken) => {
+          if (currentToken) {
+            setMessagingToken(currentToken); // Store token
+            console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
+          } else {
+            console.log("No registration token available. Request permission to generate one.");
+          }
+        })
+        .catch((err) => {
+          console.error("An error occurred while retrieving token: ", err);
+        });
+    }
+  }, [currentUser]);
+
+
+
   return (
-    <FirebaseContext.Provider value={{ auth, currentUser, db }}>
+    <FirebaseContext.Provider value={{ auth, currentUser, db, messagingToken }}>
       {children}
     </FirebaseContext.Provider>
   );
