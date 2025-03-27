@@ -25,9 +25,9 @@ const db = getFirestore(app);
 // Create a Firebase context
 const FirebaseContext = createContext(null);
 
-// Initialize Firebase Cloud Messaging and get a reference to the service
-const messaging = getMessaging(app);
-getToken(messaging, {vapidKey: "9iOV50RgeTzLXEDAqk7dDfXTXGM3LENwjzt7bW4ElQQ"});
+// // Initialize Firebase Cloud Messaging and get a reference to the service
+// const messaging = getMessaging(app);
+// getToken(messaging, {vapidKey: "9iOV50RgeTzLXEDAqk7dDfXTXGM3LENwjzt7bW4ElQQ"});
 
 // Firebase provider component
 export const FirebaseProvider = ({ children }) => {
@@ -43,31 +43,31 @@ export const FirebaseProvider = ({ children }) => {
     return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
-  // Initialize Firebase Cloud Messaging and get a reference to the service
-  useEffect(() => {
-    if (currentUser) {
-      const messaging = getMessaging(app);
+  // // Initialize Firebase Cloud Messaging and get a reference to the service
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     const messaging = getMessaging(app);
 
-      // Get the FCM token
-      getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
-        .then((currentToken) => {
-          if (currentToken) {
-            setMessagingToken(currentToken); // Store token
-            console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
-          } else {
-            console.log("No registration token available. Request permission to generate one.");
-          }
-        })
-        .catch((err) => {
-          console.error("An error occurred while retrieving token: ", err);
-        });
-    }
-  }, [currentUser]);
+  //     // Get the FCM token
+  //     getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
+  //       .then((currentToken) => {
+  //         if (currentToken) {
+  //           setMessagingToken(currentToken); // Store token
+  //           console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
+  //         } else {
+  //           console.log("No registration token available. Request permission to generate one.");
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.error("An error occurred while retrieving token: ", err);
+  //       });
+  //   }
+  // }, [currentUser]);
 
 
 
   return (
-    <FirebaseContext.Provider value={{ auth, currentUser, db, messagingToken }}>
+    <FirebaseContext.Provider value={{ auth, currentUser, db }}>
       {children}
     </FirebaseContext.Provider>
   );
