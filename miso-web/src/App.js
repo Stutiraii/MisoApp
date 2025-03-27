@@ -9,8 +9,8 @@ import AdminSchedule from "./Componets/AdminSchedule"; // Import AdminSchedule
 import ViewSchedule from "./Componets/ViewSchedule"; // Import ViewSchedule
 import ManageInventory from "./Componets/ManageInventory"; // Import ManageInventory
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
 import "./styles/App.css";
+import { ColorModeProvider } from "./customizations/ColorModeContext";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -25,6 +25,7 @@ function App() {
   }, [auth]);
 
   return (
+    <ColorModeProvider>
     <div>
       <Routes>
         <Route path="/" element={<Login />} />
@@ -48,6 +49,7 @@ function App() {
         <Route path='/ViewSchedule' element={<PrivateRoute user={user} element={<ViewSchedule />} />} />
       </Routes>
     </div>
+    </ColorModeProvider>
   );
 }
 

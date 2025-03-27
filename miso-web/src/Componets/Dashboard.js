@@ -1,61 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFirebase } from "./firebaseContext";
-import { Routes, Route, Link } from "react-router-dom";
-import PrivateRoute from "../Componets/PrivateRoute";
 import StaffDashboard from "./StaffDashboard";
 import ManageInventory from "./ManageInventory";
-import Hours from "./Hours"; // Import the ClockInOut component
+import Hours from "./Hours"; 
 import ShiftCalendar from "./ShiftCalendar";
 import ViewSchedule from "./ViewSchedule";
 import AdminSchedule from "./AdminSchedule";
 import "../styles/App.css";
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import { CalendarMonth, Inventory, Schedule, AccessTime, AdminPanelSettings } from "@mui/icons-material";
 
 function Dashboard() {
   const { currentUser } = useFirebase();
+  const [selectedComponent, setSelectedComponent] = useState("StaffDashboard");
+
+  const components = {
+    StaffDashboard: <StaffDashboard />,
+    ManageInventory: <ManageInventory />,
+    Hours: <Hours />,
+    ShiftCalendar: <ShiftCalendar />,
+    ViewSchedule: <ViewSchedule />,
+    AdminSchedule: <AdminSchedule />,
+  };
 
   return (
-    <div className="dashboard-container">
-      <h2>Dashboard</h2>
-      <nav>
-        <Link to="/AdminSchedule" className="nav-link">Admin</Link>
-        <Link to="/ManageInventory" className="nav-link">Inventory</Link>
-        <Link to="/calendar" className="nav-link">View Schedule</Link>
-        <Link to="/Dashboard" className="nav-link">Staff</Link>
-        
-                <Link to="ViewSchedule" className="nav-link">View Schedule</Link>
-                <Link to="hours" className="nav-link">Clock In/Out</Link>
-      </nav>
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      {/* Sidebar */}
+      <Drawer variant="permanent" sx={{ width: 240, flexShrink: 0, "& .MuiDrawer-paper": { width: 240, boxSizing: "border-box" } }}>
+        <Typography variant="h5" sx={{ textAlign: "center", my: 2 }}>Dashboard</Typography>
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("AdminSchedule")}> 
+              <ListItemIcon><AdminPanelSettings /></ListItemIcon>
+              <ListItemText primary="Admin" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("ManageInventory")}>
+              <ListItemIcon><Inventory /></ListItemIcon>
+              <ListItemText primary="Inventory" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("ShiftCalendar")}>
+              <ListItemIcon><CalendarMonth /></ListItemIcon>
+              <ListItemText primary="View Schedule" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("StaffDashboard")}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary="Staff" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("ViewSchedule")}>
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary="View Schedule" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("Hours")}>
+              <ListItemIcon><AccessTime /></ListItemIcon>
+              <ListItemText primary="Clock In/Out" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Drawer>
 
-      <Routes>
-        <Route
-          path="/AdminSchedule"
-          element={
-            <PrivateRoute user={currentUser} element={<AdminSchedule />} />
-          }
-        />
-
-        <Route
-          path="/ManageInventory"
-          element={
-            <PrivateRoute user={currentUser} element={<ManageInventory />} />
-          }
-        />
-
-        <Route path="/calendar" element={<ShiftCalendar />} />
-          
-        <Route path="/StaffDashboard/*" 
-         element={<PrivateRoute user={currentUser} element={<StaffDashboard />} />}
-/>
-<Route path="hours" element={<Hours />} />
-        <Route
-          path="ViewSchedule"
-          element={
-            <PrivateRoute user={currentUser} element={<ViewSchedule />} />
-          }
-        />
-
-      </Routes>
-    </div>
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        {components[selectedComponent]}
+      </Box>
+    </Box>
   );
 }
 
