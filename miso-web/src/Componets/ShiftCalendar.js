@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc } from "firebase/firestore";
-import { useFirebase } from "./firebaseContext";
+import { useFirebase } from "./Context/firebaseContext";
 import AdminSchedule from "./AdminSchedule"; // Import the table view
 
 function ShiftCalendar() {

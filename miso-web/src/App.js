@@ -8,9 +8,13 @@ import ShiftCalendar from "./Componets/ShiftCalendar";
 import AdminSchedule from "./Componets/AdminSchedule"; // Import AdminSchedule
 import ViewSchedule from "./Componets/ViewSchedule"; // Import ViewSchedule
 import ManageInventory from "./Componets/ManageInventory"; // Import ManageInventory
+import Sidebar from "./Componets/msgBar/Sidebar";
+import Chat from "./Componets/msgBar/Chat";
+import { MsgContextProvider } from "./Componets/Context/MsgContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./styles/App.css";
 import { ColorModeProvider } from "./customizations/ColorModeContext";
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -41,6 +45,22 @@ function App() {
           path="/AdminSchedule"
           element={<PrivateRoute user={user} element={<AdminSchedule />} />}
         />
+        <Route
+          path="/sidebar"
+          element={
+            <MsgContextProvider>
+              <PrivateRoute user={user} element={<Sidebar />} />
+            </MsgContextProvider>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <MsgContextProvider>
+              <PrivateRoute user={user} element={<Chat />} />
+            </MsgContextProvider>
+          }
+        />  
           <Route
           path="/ManageInventory"
           element={<PrivateRoute user={user} element={<ManageInventory />} />}

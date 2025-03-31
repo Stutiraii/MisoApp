@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { collection, getDocs } from "firebase/firestore";
-import { useFirebase } from "./firebaseContext";
+import { useFirebase } from "./Context/firebaseContext";
 import { Box, Button, Typography, Stack, Card, FormControl, FormLabel } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useFirebase } from "./firebaseContext"; // Import the useFirebase hook
+import { useFirebase } from "./Context/firebaseContext";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { TextField, Button, Typography, Box, FormControl, FormLabel } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing

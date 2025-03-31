@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useFirebase } from "./firebaseContext";
+import { useFirebase } from "./Context/firebaseContext";
 import StaffDashboard from "./StaffDashboard";
 import ManageInventory from "./ManageInventory";
 import Hours from "./Hours"; 
@@ -44,25 +44,13 @@ function Dashboard() {
           <ListItem disablePadding>
             <ListItemButton onClick={() => setSelectedComponent("ShiftCalendar")}>
               <ListItemIcon><CalendarMonth /></ListItemIcon>
-              <ListItemText primary="View Schedule" />
+              <ListItemText primary="Edit Schedule" />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton onClick={() => setSelectedComponent("StaffDashboard")}>
               <ListItemIcon><Schedule /></ListItemIcon>
               <ListItemText primary="Staff" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => setSelectedComponent("ViewSchedule")}>
-              <ListItemIcon><Schedule /></ListItemIcon>
-              <ListItemText primary="View Schedule" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => setSelectedComponent("Hours")}>
-              <ListItemIcon><AccessTime /></ListItemIcon>
-              <ListItemText primary="Clock In/Out" />
             </ListItemButton>
           </ListItem>
         </List>

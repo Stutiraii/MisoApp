@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useFirebase } from "./firebaseContext"; // Import the useFirebase hook
+import { useFirebase } from "./Context/firebaseContext";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { TextField, Button, Typography, Box, FormControl, FormLabel, FormControlLabel, Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
@@ -22,7 +22,7 @@ function Login() {
       await signInWithEmailAndPassword(auth, email, password)
         .then(() => {
           if (!auth.currentUser.emailVerified) {
-            setError("Please verify your email before logging in.");
+             setError("Please verify your email before logging in.");
           } else {
             alert("Login successful!");
             redirectToDashboard(); // Redirect to the dashboard

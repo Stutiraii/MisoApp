@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useFirebase } from "./firebaseContext";
+import { useFirebase } from "./Context/firebaseContext";
 
 const PrivateRoute = ({ element }) => {
   const { currentUser } = useFirebase();  // Get the current user from context
