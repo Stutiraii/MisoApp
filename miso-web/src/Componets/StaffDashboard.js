@@ -1,42 +1,83 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
+import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemText, ListItemIcon, Button, Box, Grid, Card, CardContent } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChatIcon from "@mui/icons-material/Chat";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import Hours from "./Hours";
 import ViewSchedule from "./ViewSchedule";
+import ChatPage from "./MessageContainer";
+import SidebarPage from "./MessageContainer";
 import { MsgContextProvider } from "./Context/MsgContext";
-import ChatPage from "./MessageContainer"; // Import the ChatPage component
-import SidebarPage from "./MessageContainer"; // If you have SidebarPage
-
-import "../styles/App.css";
 
 function StaffDashboard() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
   return (
-    <div className="dashboard-container">
-      <h2>Staff Dashboard</h2>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      {/* Top Navigation Bar */}
+      <AppBar position="static" sx={{ backgroundColor: "black" }}>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={toggleDrawer}>
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Staff Dashboard
+          </Typography>
+          <Button color="inherit" startIcon={<ExitToAppIcon />}>Logout</Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* Always visible components */}
-      <Hours />
-      <ViewSchedule />
+      {/* Sidebar Drawer */}
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
+        <List>
+          <ListItem button component={Link} to="/sidebar" onClick={toggleDrawer}>
+            <ListItemIcon><ScheduleIcon /></ListItemIcon>
+            <ListItemText primary="Sidebar" />
+          </ListItem>
+          <ListItem button component={Link} to="/chat" onClick={toggleDrawer}>
+            <ListItemIcon><ChatIcon /></ListItemIcon>
+            <ListItemText primary="Chat" />
+          </ListItem>
+        </List>
+      </Drawer>
 
-      {/* Links for Sidebar and Chat navigation */}
-      <nav>
-        <Link to="/sidebar">Go to Sidebar</Link>
-        <br />
-        <Link to="/chat">Go to Chat</Link>
-      </nav>
+      {/* Main Content Layout */}
+      <Box sx={{ flexGrow: 1, padding: 3 }}>
+        <Grid container spacing={3}>
+          {/* Hours Component */}
+          <Grid item xs={12} md={6}>
+            <Card elevation={4} sx={{ height: "100%" }}>
+              <CardContent>
+                <Hours />
+              </CardContent>
+            </Card>
+          </Grid>
 
-      {/* Message context provider for chat-related components */}
-      <MsgContextProvider>
-        <Routes>
-          {/* Define route for sidebar */}
-          <Route path="/sidebar" element={<SidebarPage />} />
-          {/* Define route for chat */}
-          <Route path="/chat" element={<ChatPage />} />
-          
-          {/* Catch-all or default route */}
-          <Route path="*" element={<div>Select an option from above.</div>} />
-        </Routes>
-      </MsgContextProvider>
-    </div>
+          {/* ViewSchedule Component */}
+          <Grid item xs={12} md={6}>
+            <Card elevation={4} sx={{ height: "100%" }}>
+              <CardContent>
+                <ViewSchedule />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Additional Routes for Sidebar & Chat */}
+        <MsgContextProvider>
+          <Routes>
+            <Route path="/sidebar" element={<SidebarPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+          </Routes>
+        </MsgContextProvider>
+      </Box>
+    </Box>
   );
 }
 

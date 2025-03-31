@@ -1,17 +1,46 @@
 import React, { useState, useEffect } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { collection, getDocs, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
-import { Card, TextField, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import {
+  Card,
+  TextField,
+  Button,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  InputAdornment,
+} from "@mui/material";
 
 function ManageInventory() {
   const { db } = useFirebase();
   const [inventory, setInventory] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [minStock, setMinStock] = useState(1);
   const [maxStock, setMaxStock] = useState(100);
+  const [category, setCategory] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const [sortBy, setSortBy] = useState("category");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch inventory data on mount
   useEffect(() => {
     const fetchInventory = async () => {
       const inventoryCollection = collection(db, "inventory");
@@ -21,35 +50,76 @@ function ManageInventory() {
 
     fetchInventory();
 
-    // Real-time updates
     const unsubscribe = onSnapshot(collection(db, "inventory"), (snapshot) => {
       setInventory(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [db]);
 
-  // Add new item to inventory
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categoryCollection = collection(db, "categories");
+      const categorySnapshot = await getDocs(categoryCollection);
+      setCategories(categorySnapshot.docs.map((doc) => doc.data().name));
+    };
+
+    fetchCategories();
+  }, [db]);
+
+  const handleAddCategory = async () => {
+    if (!newCategory) return;
+    try {
+      await addDoc(collection(db, "categories"), { name: newCategory });
+      setCategories([...categories, newCategory]);
+      setNewCategory("");
+    } catch (error) {
+      console.error("Error adding category:", error);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryName) => {
+    try {
+      const categoryRef = collection(db, "categories");
+      const categoryDocs = await getDocs(categoryRef);
+      const categoryToDelete = categoryDocs.docs.find((doc) => doc.data().name === categoryName);
+      if (categoryToDelete) {
+        await deleteDoc(doc(db, "categories", categoryToDelete.id));
+        setCategories(categories.filter((cat) => cat !== categoryName));
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
+  };
+
   const handleAddItem = async (e) => {
     e.preventDefault();
-    if (!itemName || quantity < minStock || quantity > maxStock) {
-      alert("Please enter a valid item name and ensure quantity is within the allowed range.");
+    if (!itemName || !category || quantity < minStock || quantity > maxStock) {
+      alert("Please fill all fields and ensure quantity is within the allowed range.");
       return;
     }
     try {
-      await addDoc(collection(db, "inventory"), { name: itemName, quantity, minStock, maxStock });
+      await addDoc(collection(db, "inventory"), { name: itemName, quantity, minStock, maxStock, category });
       setItemName("");
       setQuantity(0);
+      setCategory("");
     } catch (error) {
       console.error("Error adding item:", error);
     }
   };
 
-  // Update item quantity
+  const handleDeleteItem = async (id) => {
+    try {
+      await deleteDoc(doc(db, "inventory", id));
+      setInventory(inventory.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  };
+
   const updateItemQuantity = async (id, currentQuantity, change) => {
     const newQuantity = currentQuantity + change;
-    if (newQuantity < 0) return;
-
+    if (newQuantity < 0 || newQuantity > maxStock) return;
     try {
       const itemRef = doc(db, "inventory", id);
       await updateDoc(itemRef, { quantity: newQuantity });
@@ -58,14 +128,74 @@ function ManageInventory() {
     }
   };
 
+  const filteredInventory = inventory.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedInventory = [...filteredInventory].sort((a, b) => {
+    if (sortBy === "category") {
+      return a.category?.localeCompare(b.category) || a.name.localeCompare(b.name);
+    }
+    return a.name.localeCompare(b.name);
+  });
+
   return (
-    <Card sx={{ padding: 4, maxWidth:"none" , margin: 0,minHeight: "100vh", display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start"}}>
+    <Card sx={{ padding: 4, maxWidth: "none", margin: 0, minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
       <Typography variant="h4" gutterBottom>
         Inventory Management
       </Typography>
 
+      {/* Search Bar */}
+      <TextField
+        label="Search Items"
+        variant="outlined"
+        fullWidth
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: "1rem" }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">🔍</InputAdornment>
+          ),
+        }}
+      />
+
+      {/* Sort By */}
+      <FormControl fullWidth style={{ marginBottom: "1rem" }}>
+        <InputLabel>Sort By</InputLabel>
+        <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <MenuItem value="category">Category</MenuItem>
+          <MenuItem value="name">Item Name</MenuItem>
+        </Select>
+      </FormControl>
+
+      {/* Categories Section */}
+      <Typography variant="h5" gutterBottom>Categories</Typography>
+      {categories.map((cat, index) => (
+        <div key={index}>
+          <Typography>{cat}</Typography>
+          <Button variant="contained" color="error" onClick={() => handleDeleteCategory(cat)}>
+            Delete
+          </Button>
+        </div>
+      ))}
+
+      {/* Add Category */}
+      <Typography variant="h5" gutterBottom>Add Category</Typography>
+      <TextField
+        label="New Category"
+        variant="outlined"
+        fullWidth
+        value={newCategory}
+        onChange={(e) => setNewCategory(e.target.value)}
+        style={{ marginBottom: "1rem" }}
+      />
+      <Button variant="contained" color="primary" onClick={handleAddCategory}>
+        Add Category
+      </Button>
+
+      {/* Add Item */}
+      <Typography variant="h5" gutterBottom>Add Item</Typography>
       <form onSubmit={handleAddItem} style={{ marginBottom: "2rem" }}>
         <TextField
           label="Item Name"
@@ -102,18 +232,31 @@ function ManageInventory() {
           onChange={(e) => setMaxStock(Number(e.target.value))}
           style={{ marginBottom: "1rem" }}
         />
+        <FormControl fullWidth style={{ marginBottom: "1rem" }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((cat, index) => (
+              <MenuItem key={index} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Button variant="contained" color="primary" type="submit">
           Add Item
         </Button>
       </form>
 
-      <Typography variant="h5" gutterBottom>
-        Inventory List
-      </Typography>
+      {/* Inventory List */}
+      <Typography variant="h5" gutterBottom>Inventory List</Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Category</TableCell>
               <TableCell>Item Name</TableCell>
               <TableCell>Quantity</TableCell>
               <TableCell>Min Stock</TableCell>
@@ -122,12 +265,11 @@ function ManageInventory() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {inventory.map((item) => (
+            {sortedInventory.map((item) => (
               <TableRow key={item.id}>
+                <TableCell>{item.category}</TableCell>
                 <TableCell>{item.name}</TableCell>
-                <TableCell style={{ color: item.quantity < item.minStock ? "red" : "black" }}>
-                  {item.quantity} {item.quantity < item.minStock && "⚠️ Low Stock!"}
-                </TableCell>
+                <TableCell>{item.quantity}</TableCell>
                 <TableCell>{item.minStock}</TableCell>
                 <TableCell>{item.maxStock}</TableCell>
                 <TableCell>
@@ -136,7 +278,6 @@ function ManageInventory() {
                     color="success"
                     onClick={() => updateItemQuantity(item.id, item.quantity, 1)}
                     disabled={item.quantity >= item.maxStock}
-                    sx={{ marginRight: 1 }}
                   >
                     +
                   </Button>
@@ -144,8 +285,16 @@ function ManageInventory() {
                     variant="contained"
                     color="error"
                     onClick={() => updateItemQuantity(item.id, item.quantity, -1)}
+                    disabled={item.quantity <= item.minStock}
                   >
                     -
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleDeleteItem(item.id)}
+                  >
+                    Delete
                   </Button>
                 </TableCell>
               </TableRow>

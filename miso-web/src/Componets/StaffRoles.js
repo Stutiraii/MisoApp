@@ -31,17 +31,15 @@ function StaffRoles() {
         }
     }
 
-    const deleteRole = async (id) => {
-        e.preventDefault();
-        if(!role.trim()) return alert("Enter a valid role!");
-        try{
-            await DeleteDoc(doc(db, "roles", id));
-            setRoles(roles.filter((role) => role.id !== id));
-        } 
-        catch (error) {
-            setError("Error deleting role: " + error.message);
-        }
+ const deleteRole = async (id) => {
+    try {
+        await deleteDoc(doc(db, "roles", id));
+        setRoles(roles.filter((role) => role.id !== id));
+    } catch (error) {
+        setError("Error deleting role: " + error.message);
+    }
 };
+
 
 return (
     <div>

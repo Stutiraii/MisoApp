@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, addDoc, getDocs, onSnapshot } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import {
   TextField,
@@ -38,6 +33,7 @@ function AdminSchedule() {
   const [selectedUser, setSelectedUser] = useState("");
   const [newRole, setNewRole] = useState("");
   const [error, setError] = useState("");
+  const [showAddRole, setShowAddRole] = useState(false); // Add state to toggle "Add Role" form
 
   // Fetch Users, Roles, and Shifts
   useEffect(() => {
@@ -74,25 +70,32 @@ function AdminSchedule() {
       await addDoc(collection(db, "roles"), { name: newRole });
       setNewRole("");
       setError("");
+      setShowAddRole(false); // Hide the form after adding the role
     } catch (error) {
       setError("Error adding role: " + error.message);
     }
   };
 
-  // Handle scheduling shifts
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
+  
+    console.log("Date:", date);
+    console.log("Shift Start:", shiftStart);
+    console.log("Shift End:", shiftEnd);
+    console.log("Selected Role:", selectedRole);
+    console.log("Selected User:", selectedUser);
+  
     if (!date || !shiftStart || !shiftEnd || !selectedRole || !selectedUser) {
       setError("Please fill all fields");
       return;
     }
-
+  
     const userDetails = users.find((user) => user.id === selectedUser);
     if (!userDetails) {
       setError("Invalid user selection");
       return;
     }
-
+  
     try {
       await addDoc(collection(db, "shifts"), {
         date,
@@ -102,7 +105,7 @@ function AdminSchedule() {
         userId: userDetails.id,
         username: userDetails.name,
       });
-
+  
       setShifts([
         ...shifts,
         {
@@ -114,8 +117,8 @@ function AdminSchedule() {
           username: userDetails.name,
         },
       ]);
-
-      setError("");
+  
+      setError(""); // Clear any previous errors
       setDate("");
       setShiftStart("");
       setShiftEnd("");
@@ -125,7 +128,7 @@ function AdminSchedule() {
       setError("Error adding shift: " + error.message);
     }
   };
-
+  
   // Generate time options (24-hour format, 30-min intervals)
   const timeOptions = [];
   for (let i = 0; i < 24; i++) {
@@ -170,19 +173,35 @@ function AdminSchedule() {
   }));
 
   return (
-    <ScheduleContainer direction="column" justifyContent="center" alignItems="center">
-      <Button onClick={colorMode.toggleColorMode} sx={{ position: "fixed", top: "1rem", left: "1rem" }}>
+    <ScheduleContainer
+      direction="column"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Button
+        onClick={colorMode.toggleColorMode}
+        sx={{ position: "fixed", top: "1rem", left: "1rem" }}
+      >
         {theme.palette.mode === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
       </Button>
       <Card variant="outlined">
-        <Typography component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+        >
           Admin Schedule
         </Typography>
         <Box
           component="form"
           onSubmit={handleScheduleSubmit}
           noValidate
-          sx={{ display: "flex", flexDirection: "column", width: "100%", gap: 2 }}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: 2,
+          }}
         >
           <FormControl>
             <FormLabel htmlFor="date">Date</FormLabel>
@@ -200,24 +219,26 @@ function AdminSchedule() {
           <FormControl>
             <FormLabel htmlFor="shiftStart">Shift Start</FormLabel>
             <TextField
-              id="shiftStart"
-              select
-              name="shiftStart"
-              value={shiftStart}
-              onChange={(e) => setShiftStart(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              {timeOptions.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </TextField>
+  id="shiftStart"
+  select
+  name="shiftStart"
+  value={shiftStart}
+  onChange={(e) => setShiftStart(e.target.value)}
+  required
+  fullWidth
+  variant="outlined"
+  SelectProps={{
+    native: true,
+  }}
+>
+  <option value="">Select Shift Start</option> {/* Add this */}
+  {timeOptions.map((time) => (
+    <option key={time} value={time}>
+      {time}
+    </option>
+  ))}
+</TextField>
+
           </FormControl>
           <FormControl>
             <FormLabel htmlFor="shiftEnd">Shift End</FormLabel>
@@ -241,28 +262,38 @@ function AdminSchedule() {
               ))}
             </TextField>
           </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="role">Role</FormLabel>
+       
+          <FormControl fullWidth>
+            <FormLabel htmlFor="Add Role">Add Role</FormLabel>
             <TextField
-              id="role"
-              select
-              name="role"
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              id="Add Role"
+              name="Add Role"
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
               required
               fullWidth
               variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
+              placeholder="Type or select a role"
+              select={false} // Remove `select` to allow text input
+            />
+           
+            <Button
+              onClick={handleAddRole}
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 2 }}
             >
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </TextField>
+              Add Role
+            </Button>
+            {error && (
+              <Typography color="error" sx={{ mt: 2 }}>
+                {error}
+              </Typography>
+            )}
           </FormControl>
+          
+
           <FormControl>
             <FormLabel htmlFor="user">User</FormLabel>
             <TextField
@@ -285,8 +316,42 @@ function AdminSchedule() {
               ))}
             </TextField>
           </FormControl>
+
+          <FormControl>
+  <FormLabel htmlFor="role">Role</FormLabel>
+  <TextField
+    id="role"
+    select
+    name="role"
+    value={selectedRole}
+    onChange={(e) => {
+      console.log("Selected role:", e.target.value); // Debugging
+      setSelectedRole(e.target.value);
+    }}
+    required
+    fullWidth
+    variant="outlined"
+    SelectProps={{
+      native: true,
+    }}
+  >
+    <option value="">Select a Role</option> {/* Add a default option */}
+    {roles.map((role) => (
+      <option key={role.id} value={role.name}>
+        {role.name}
+      </option>
+    ))}
+  </TextField>
+</FormControl>
+
           {error && <Typography color="error">{error}</Typography>}
-          <Button type="submit" fullWidth variant="contained" color="primary" sx={{ py: 2 }}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ py: 2 }}
+          >
             Save Shift
           </Button>
         </Box>

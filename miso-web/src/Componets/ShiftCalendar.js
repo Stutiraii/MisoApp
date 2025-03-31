@@ -6,7 +6,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc } from "firebase/firestore";
 import { useFirebase } from "./Context/firebaseContext";
 import AdminSchedule from "./AdminSchedule"; // Import the table view
-
+import { styled, useTheme } from "@mui/material/styles";
+import { Box, Typography, Stack, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 function ShiftCalendar() {
   const { db } = useFirebase();
   const [shifts, setShifts] = useState([]);
@@ -88,29 +89,57 @@ function ShiftCalendar() {
     }
   };
 
-  // Handle adding new shifts from the calendar
   const handleDateSelect = async (selectInfo) => {
-    const username = prompt("Enter staff name:");
-    const role = prompt("Enter role:");
+    const username = window.prompt("Enter staff name:");
+    const role = window.prompt("Enter role:");
     const shiftStart = selectInfo.startStr.split("T")[1]?.slice(0, 5);
     const shiftEnd = selectInfo.endStr.split("T")[1]?.slice(0, 5);
-
+  
     if (username && role) {
       try {
+        // Add new shift to Firestore
         await addDoc(collection(db, "shifts"), {
           username,
           role,
           date: selectInfo.startStr.split("T")[0],
           shiftStart,
           shiftEnd,
-          userId: "manual_entry", // If you have a proper userId system, replace this
+          userId: "manual_entry", // Adjust this if you have actual user IDs
         });
+  
+        // Refresh shifts list
         fetchShifts();
       } catch (error) {
         console.error("Error adding shift:", error);
+        alert("There was an error adding the shift.");
       }
+    } else {
+      alert("Please enter both username and role.");
     }
   };
+  
+    const ScheduleContainer = styled(Stack)(({ theme }) => ({
+      height: "100vh",
+      minHeight: "100%",
+      padding: theme.spacing(4),
+      background:
+        theme.palette.mode === "dark"
+          ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))"
+          : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    }));
+  
+    const CardContainer = styled(Card)(({ theme }) => ({
+      display: "flex",
+      flexDirection: "column",
+      alignSelf: "center",
+      width: "100%",
+      padding: theme.spacing(4),
+      gap: theme.spacing(2),
+      margin: "auto",
+      maxWidth: "900px",
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+    }));
 
   return (
     <div>
@@ -118,7 +147,12 @@ function ShiftCalendar() {
 
       {/* Admin Schedule Table */}
       <AdminSchedule shifts={shifts} fetchShifts={fetchShifts} />
-
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <ScheduleContainer direction="column" justifyContent="center" alignItems="center">
+        <CardContainer variant="outlined">
+          <Typography component="h1" variant="h4" sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
+          Schedule
+          </Typography>
       {/* Calendar View */}
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -137,6 +171,9 @@ function ShiftCalendar() {
           right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
       />
+      </ CardContainer>
+      </ScheduleContainer>
+      </Box>
     </div>
   );
 }
