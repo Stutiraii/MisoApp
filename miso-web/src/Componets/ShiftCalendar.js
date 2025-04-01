@@ -6,8 +6,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc } from "firebase/firestore";
 import { useFirebase } from "./Context/firebaseContext";
 import AdminSchedule from "./AdminSchedule"; // Import the table view
-import { styled, useTheme } from "@mui/material/styles";
-import { Box, Typography, Stack, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { Typography, Stack, Card } from "@mui/material";
 function ShiftCalendar() {
   const { db } = useFirebase();
   const [shifts, setShifts] = useState([]);
@@ -34,7 +34,6 @@ function ShiftCalendar() {
       const snapshot = await getDocs(shiftsRef);
       const shiftEvents = snapshot.docs.map((doc) => {
         const data = doc.data();
-        console.log("Shift Data:", data); // Debugging log
 
         return {
           id: doc.id,
@@ -57,7 +56,7 @@ function ShiftCalendar() {
   // Convert shift data for FullCalendar
   const calendarEvents = shifts.map((shift) => ({
     id: shift.id,
-    title: `${shift.username} - ${shift.role}`, // Uses correct username
+    title: `${shift.username} - ${shift.role}`, 
     start: `${shift.date}T${shift.shiftStart}`,
     end: `${shift.date}T${shift.shiftEnd}`,
     color: shift.color,
@@ -143,13 +142,6 @@ function ShiftCalendar() {
 
   return (
     <div>
-      <h2>Manage Staff Schedule</h2>
-
-      {/* Admin Schedule Table */}
-      <AdminSchedule shifts={shifts} fetchShifts={fetchShifts} />
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <ScheduleContainer direction="column" justifyContent="center" alignItems="center">
-        <CardContainer variant="outlined">
           <Typography component="h1" variant="h4" sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
           Schedule
           </Typography>
@@ -163,17 +155,15 @@ function ShiftCalendar() {
         eventClick={handleEventDelete}
         eventChange={handleEventChange}
         select={handleDateSelect}
-        height="auto" // Auto height to fit container
-        contentHeight={500} // Adjust event container height
+        height="auto" 
+        contentHeight={500}
         headerToolbar={{
           left: "prev,next today",
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
       />
-      </ CardContainer>
-      </ScheduleContainer>
-      </Box>
+     
     </div>
   );
 }

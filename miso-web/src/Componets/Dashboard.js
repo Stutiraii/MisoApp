@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useFirebase } from "./Context/firebaseContext"; // Assuming Firebase context
 import StaffDashboard from "./StaffDashboard";
 import ManageInventory from "./ManageInventory";
 import ShiftCalendar from "./ShiftCalendar";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import AdminSchedule from "./AdminSchedule";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { CalendarMonth, Inventory, Schedule, AdminPanelSettings, People, AttachMoney, Warning } from "@mui/icons-material";
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography,
-   Button, Grid, Card, CardContent, Divider, CircularProgress,
-   AppBar, Toolbar
+   Button, Grid, CardContent, Divider, CircularProgress,
    } from "@mui/material";
 import { getDocs, where, query, collection } from "firebase/firestore";
+import MuiCard from "@mui/material/Card";
+import { styled, useTheme } from "@mui/material/styles";
+import ViewSchedule from "./ViewSchedule";
+import Stack from "@mui/material/Stack";
+import ColorModeContext from "../customizations/ColorModeContext";
 
 function Dashboard() {
   const { currentUser, handleLogout, firebase, db } = useFirebase(); // Accessing Firebase context
@@ -20,6 +24,10 @@ function Dashboard() {
   const [loading, setLoading] = useState(true); 
   const [lowStockItems, setLowStockItems] = useState([]);
   const [ minStock, setMinStock]= useState(1);
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const colorMode = useContext(ColorModeContext);
+
   
   
   // State to manage loading state
@@ -54,6 +62,8 @@ function Dashboard() {
     ManageInventory: <ManageInventory />,
     ShiftCalendar: <ShiftCalendar />,
     AdminSchedule: <AdminSchedule />,
+    CreateShifts: <ViewSchedule />
+
   };
 
   // Example data for stats (replace with dynamic data)
@@ -82,7 +92,51 @@ function Dashboard() {
     fetchStaffData();
   }, [firebase]);
 
+  const handleEditShifts = () => {
+    navigate("/AdminSchedule");
+  }
+  const handleViewInventory = () => {
+    navigate("/ManageInventory")
+  }
+    const DashboardContainer = styled(Stack)(({ theme }) => ({
+      height: "100vh",
+      minHeight: "100%",
+      padding: theme.spacing(2),
+      [theme.breakpoints.up("sm")]: {
+        padding: theme.spacing(4),
+      },
+      background:
+        theme.palette.mode === "dark"
+          ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))"
+          : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    }));
+
+  // Styled components for MUI
+    const Card = styled(MuiCard)(({ theme }) => ({
+      display: "flex",
+      flexDirection: "column",
+      alignSelf: "center",
+      width: "100%",
+      padding: theme.spacing(4),
+      gap: theme.spacing(2),
+      margin: "auto",
+      [theme.breakpoints.up("sm")]: {
+        maxWidth: "450px",
+      },
+      boxShadow:
+        theme.palette.mode === "dark"
+          ? "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px"
+          : "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+    }));
+
   return (
+    <DashboardContainer
+      direction="column"
+      justifyContent="center"
+      alignItems="center"
+    >
     <Box sx={{ display: "flex", height: "100vh" }}>
       {/* Sidebar */}
       <Drawer
@@ -93,9 +147,6 @@ function Dashboard() {
           "& .MuiDrawer-paper": {
             width: 240,
             boxSizing: "border-box",
-            backgroundColor: "#1e2a3a",
-            color: "white",
-            zIndex: 1200,
           },
         }}
       >
@@ -103,34 +154,32 @@ function Dashboard() {
           Dashboard
         </Typography>
         <List>
-        <ListItem disablePadding>
-  <ListItemButton onClick={() => setSelectedComponent("StaffDashboard")}>
-    <ListItemIcon><People /></ListItemIcon>
-    <ListItemText primary="Staff Dashboard" />
-  </ListItemButton>
-</ListItem>
-<ListItem disablePadding>
-  <ListItemButton onClick={() => setSelectedComponent("ManageInventory")}>
-    <ListItemIcon><Inventory /></ListItemIcon>
-    <ListItemText primary="Manage Inventory" />
-  </ListItemButton>
-</ListItem>
-<ListItem disablePadding>
-  <ListItemButton onClick={() => setSelectedComponent("ShiftCalendar")}>
-    <ListItemIcon><CalendarMonth /></ListItemIcon>
-    <ListItemText primary="Edit Schedule" />
-  </ListItemButton>
-</ListItem>
-<ListItem disablePadding>
-  {/* When clicking "Admin", reset to the main Dashboard */}
-  <ListItemButton onClick={() => setSelectedComponent("Dashboard")}>
-    <ListItemIcon><AdminPanelSettings /></ListItemIcon>
-    <ListItemText primary="Admin" />
-  </ListItemButton>
-</ListItem>
-
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("StaffDashboard")}>
+              <ListItemIcon><People /></ListItemIcon>
+              <ListItemText primary="Staff Dashboard" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("ManageInventory")}>
+              <ListItemIcon><Inventory /></ListItemIcon>
+              <ListItemText primary="Manage Inventory" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("ShiftCalendar")}>
+              <ListItemIcon><CalendarMonth /></ListItemIcon>
+              <ListItemText primary="Edit Schedule" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setSelectedComponent("Dashboard")}>
+              <ListItemIcon><AdminPanelSettings /></ListItemIcon>
+              <ListItemText primary="Admin" />
+            </ListItemButton>
+          </ListItem>
         </List>
-  
+
         {/* Logout Button */}
         <Box sx={{ position: "absolute", bottom: 20, width: "100%" }}>
           <Button
@@ -139,96 +188,101 @@ function Dashboard() {
             startIcon={<LogoutIcon />}
             onClick={handleLogout}
             sx={{
-              color: "#ccc",
+             
               justifyContent: "flex-start",
-              marginTop: "auto",
-              "&:hover": { backgroundColor: "#444" },
+              marginTop: "auto"
+             
             }}
           >
             Logout
           </Button>
         </Box>
       </Drawer>
-  
+
       <Box sx={{ flexGrow: 1, p: 3 }}>
-  <Typography variant="h4" gutterBottom>
-    Dashboard Overview
-  </Typography>
+        <Button onClick={colorMode.toggleColorMode} sx={{ position: "fixed", top: "1rem", right: "1rem" }}>
+          {theme.palette.mode === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
+        </Button>
 
-  {/* If "Dashboard" is selected, show main dashboard stats */}
-  {selectedComponent === "Dashboard" ? (
-    <>
-      {/* Dashboard Cards */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ backgroundColor: "#1e2a3a", color: "white" }}>
-            <CardContent>
-              <People sx={{ fontSize: 40 }} />
-              <Typography variant="h6" mt={1}>Total Staff</Typography>
-              {loading ? (
-                <CircularProgress sx={{ color: "white" }} />
-              ) : (
-                <Typography variant="h4">{totalStaff}</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ backgroundColor: "#1e2a3a", color: "white" }}>
-            <CardContent>
-              <CalendarMonth sx={{ fontSize: 40 }} />
-              <Typography variant="h6" mt={1}>Active Shifts</Typography>
-              <Typography variant="h4">{stats.activeShifts}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ backgroundColor: "#1e2a3a", color: "white" }}>
-            <CardContent>
-              <Inventory sx={{ fontSize: 40 }} />
-              <Typography variant="h6" mt={1}>Low Inventory Alerts</Typography>
-              <Typography variant="h4">{lowStockItems.length}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ backgroundColor: "#1e2a3a", color: "white" }}>
-            <CardContent>
-              <AttachMoney sx={{ fontSize: 40 }} />
-              <Typography variant="h6" mt={1}>Total Payroll</Typography>
-              <Typography variant="h4">${stats.totalPayroll}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </>
-  ) : (
-    components[selectedComponent]
-  )}
 
-   {/* Quick Actions Section */}
-   <Typography variant="h5" gutterBottom>Quick Actions</Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button fullWidth variant="contained" color="primary">Create/Edit Shifts</Button>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button fullWidth variant="contained" color="primary">Manage Staff</Button>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button fullWidth variant="contained" color="primary">Approve Payroll</Button>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button fullWidth variant="contained" color="primary">View Inventory</Button>
-          </Grid>
-        </Grid>
+        <Typography variant="h4" gutterBottom>
+          Dashboard Overview
+        </Typography>
 
-        <Divider sx={{ marginY: 2 }} />
-        
-</Box>
+        {/* Dashboard Content */}
+        {selectedComponent === "Dashboard" ? (
+          <>
+            {/* Dashboard Cards */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <People sx={{ fontSize: 40 }} />
+                    <Typography variant="h6" mt={1}>Total Staff</Typography>
+                    {loading ? <CircularProgress/> : <Typography variant="h4">{totalStaff}</Typography>}
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <CalendarMonth sx={{ fontSize: 40 }} />
+                    <Typography variant="h6" mt={1}>Active Shifts</Typography>
+                    <Typography variant="h4">{stats.activeShifts}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Inventory sx={{ fontSize: 40 }} />
+                    <Typography variant="h6" mt={1}>Low Inventory Alerts</Typography>
+                    <Typography variant="h4">{lowStockItems.length}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <AttachMoney sx={{ fontSize: 40 }} />
+                    <Typography variant="h6" mt={1}>Total Payroll</Typography>
+                    <Typography variant="h4">${stats.totalPayroll}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Quick Actions Section */}
+            <Typography variant="h5" gutterBottom>Quick Actions</Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button onClick={handleEditShifts} fullWidth variant="contained" color="primary">Create Shifts</Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button fullWidth variant="contained" color="primary">Manage Staff</Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button fullWidth variant="contained" color="primary">Approve Payroll</Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Button onClick={handleViewInventory}fullWidth variant="contained" color="primary">View Inventory</Button>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ marginY: 2 }} />
+
+            {/* Calendar (ViewSchedule) Section */}
+            <Typography variant="h5" gutterBottom>Shift Calendar</Typography>
+            <ShiftCalendar />
+          </>
+        ) : (
+          components[selectedComponent]
+        )}
+      </Box>
     </Box>
+    </DashboardContainer>
   );
-  
-}
 
-export default Dashboard;
+  }
+  
+  export default Dashboard;
