@@ -50,14 +50,14 @@ function StaffDashboard() {
       {/* Main Content Layout */}
       <Box sx={{ flexGrow: 1, padding: 3 }}>
         <Grid container spacing={3}>
-          {/* Hours Component */}
+          {/* Hours Component
           <Grid item xs={12} md={6}>
             <Card elevation={4} sx={{ height: "100%" }}>
               <CardContent>
                 <Hours />
               </CardContent>
             </Card>
-          </Grid>
+          </Grid> */}
 
           {/* ViewSchedule Component */}
           <Grid item xs={12} md={6}>

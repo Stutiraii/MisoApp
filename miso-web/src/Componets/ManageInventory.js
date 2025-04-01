@@ -7,7 +7,9 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  where,
   doc,
+  query
 } from "firebase/firestore";
 import {
   Card,
@@ -23,6 +25,9 @@ import {
   Paper,
   MenuItem,
   Select,
+  List,
+  ListItem,
+  ListItemText,
   FormControl,
   InputLabel,
   InputAdornment,
@@ -40,6 +45,7 @@ function ManageInventory() {
   const [newCategory, setNewCategory] = useState("");
   const [sortBy, setSortBy] = useState("category");
   const [searchTerm, setSearchTerm] = useState("");
+  const [ lowStockItems, setLowStockItems] = useState([]);
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -138,6 +144,25 @@ function ManageInventory() {
     }
     return a.name.localeCompare(b.name);
   });
+
+  useEffect(() => {
+    const fetchLowStockItems = async () => {
+      const lowStockQuery = query(
+        collection(db, "inventory"),
+        where("quantity", "<=", minStock)
+      );
+      const lowStockSnapshot = await getDocs(lowStockQuery);
+      const lowStockData = lowStockSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setLowStockItems(lowStockData); // Set low-stock items state
+    };
+  
+    fetchLowStockItems();
+  }, [db, minStock]);
+  
 
   return (
     <Card sx={{ padding: 4, maxWidth: "none", margin: 0, minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
@@ -250,6 +275,28 @@ function ManageInventory() {
         </Button>
       </form>
 
+      
+      {/* Low Inventory Alert Section */}
+      <Card sx={{ padding: 3, marginBottom: 2 }}>
+        <Typography variant="h5" gutterBottom color="error">
+          🚨 Low Inventory Alerts
+        </Typography>
+        {lowStockItems.length === 0 ? (
+          <Typography>No items are running low.</Typography>
+        ) : (
+          <List>
+            {lowStockItems.map((item) => (
+              <ListItem key={item.id}>
+                <ListItemText
+                  primary={`${item.name} (Stock: ${item.quantity})`}
+                  secondary={`Minimum Required: ${item.minStock}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Card>
+
       {/* Inventory List */}
       <Typography variant="h5" gutterBottom>Inventory List</Typography>
       <TableContainer component={Paper}>
@@ -285,7 +332,6 @@ function ManageInventory() {
                     variant="contained"
                     color="error"
                     onClick={() => updateItemQuantity(item.id, item.quantity, -1)}
-                    disabled={item.quantity <= item.minStock}
                   >
                     -
                   </Button>

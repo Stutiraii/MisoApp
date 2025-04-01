@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { collection, addDoc } from "firebase/firestore";
 import { getMessaging, getToken } from "firebase/messaging";
-
 
 // Firebase configuration
 const firebaseConfig = {
@@ -25,10 +23,6 @@ const db = getFirestore(app);
 // Create a Firebase context
 const FirebaseContext = createContext(null);
 
-// // Initialize Firebase Cloud Messaging and get a reference to the service
-// const messaging = getMessaging(app);
-// getToken(messaging, {vapidKey: "9iOV50RgeTzLXEDAqk7dDfXTXGM3LENwjzt7bW4ElQQ"});
-
 // Firebase provider component
 export const FirebaseProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -43,31 +37,40 @@ export const FirebaseProvider = ({ children }) => {
     return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
-  // // Initialize Firebase Cloud Messaging and get a reference to the service
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     const messaging = getMessaging(app);
+  // Firebase Cloud Messaging (FCM) setup
+  useEffect(() => {
+    if (currentUser) {
+      const messaging = getMessaging(app);
 
-  //     // Get the FCM token
-  //     getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
-  //       .then((currentToken) => {
-  //         if (currentToken) {
-  //           setMessagingToken(currentToken); // Store token
-  //           console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
-  //         } else {
-  //           console.log("No registration token available. Request permission to generate one.");
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.error("An error occurred while retrieving token: ", err);
-  //       });
-  //   }
-  // }, [currentUser]);
+      // Get the FCM token
+      getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
+        .then((currentToken) => {
+          if (currentToken) {
+            setMessagingToken(currentToken); // Store token
+            console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
+          } else {
+            console.log("No registration token available. Request permission to generate one.");
+          }
+        })
+        .catch((err) => {
+          console.error("An error occurred while retrieving token: ", err);
+        });
+    }
+  }, [currentUser]);
 
-
+  // Logout function
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        console.log("User logged out");
+      })
+      .catch((error) => {
+        console.error("Error logging out: ", error);
+      });
+  };
 
   return (
-    <FirebaseContext.Provider value={{ auth, currentUser, db }}>
+    <FirebaseContext.Provider value={{ auth, currentUser, db, handleLogout }}>
       {children}
     </FirebaseContext.Provider>
   );

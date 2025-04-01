@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { collection, addDoc, updateDoc, doc, query, where, getDocs } from "firebase/firestore";
-import { Button, Typography, Paper, Card, CardContent, Box, CircularProgress } from "@mui/material";
+import { collection, addDoc, updateDoc, doc, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { Button, Typography, Card, CardContent, Box, CircularProgress } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
 function Hours() {
@@ -10,9 +10,11 @@ function Hours() {
   const [activeDocId, setActiveDocId] = useState(null);
   const [error, setError] = useState(null);
   const [time, setTime] = useState(new Date());
-  const [loading, setLoading] = useState(false); // Added loading state
+  const [loading, setLoading] = useState(false);
+  const [totalHours, setTotalHours] = useState(null); // New state for total hours worked
   const theme = useTheme();
 
+  // Update time every second
   useEffect(() => {
     const interval = setInterval(() => {
       setTime(new Date());
@@ -20,12 +22,40 @@ function Hours() {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch active attendance record on mount
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchActiveClockIn = async () => {
+      try {
+        const q = query(
+          collection(db, "attendance"),
+          where("userId", "==", currentUser.uid),
+          where("status", "==", "Pending"),
+          orderBy("startTime", "desc"),
+          limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const latestDoc = querySnapshot.docs[0];
+          setActiveDocId(latestDoc.id);
+          setIsClockedIn(true);
+        }
+      } catch (err) {
+        console.error("Error fetching clock-in status:", err);
+        setError("Error checking clock-in status.");
+      }
+    };
+    fetchActiveClockIn();
+  }, [currentUser]);
+
+  // Handle Clock-In
   const handleClockIn = async () => {
     setError(null);
-    setLoading(true); // Start loading
+    setLoading(true);
+    setTotalHours(null); // Reset total hours on new shift
     if (!currentUser || !currentUser.uid) {
       setError("You must be logged in to clock in.");
-      setLoading(false); // Stop loading
+      setLoading(false);
       return;
     }
     try {
@@ -40,53 +70,59 @@ function Hours() {
     } catch (err) {
       setError("Error clocking in. Please try again.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
+  // Handle Clock-Out
   const handleClockOut = async () => {
     setError(null);
-    setLoading(true); // Start loading
+    setLoading(true);
     if (!currentUser || !currentUser.uid) {
       setError("You must be logged in to clock out.");
-      setLoading(false); // Stop loading
+      setLoading(false);
       return;
     }
     if (!activeDocId) {
-      try {
-        const q = query(
-          collection(db, "attendance"),
-          where("userId", "==", currentUser.uid),
-          where("status", "==", "Pending")
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const latestDoc = querySnapshot.docs[0];
-          setActiveDocId(latestDoc.id);
-        } else {
-          setError("No active clock-in found. Please clock in first.");
-          setLoading(false); // Stop loading
-          return;
-        }
-      } catch (err) {
-        setError("Error finding active clock-in.");
-        setLoading(false); // Stop loading
-        return;
-      }
+      setError("No active clock-in found. Please refresh or clock in first.");
+      setLoading(false);
+      return;
     }
     try {
       const now = new Date().toISOString();
       const docRef = doc(db, "attendance", activeDocId);
+
+      // Fetch the start time from Firebase
+      const q = query(collection(db, "attendance"), where("userId", "==", currentUser.uid), where("status", "==", "Pending"));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setError("No active clock-in found.");
+        setLoading(false);
+        return;
+      }
+
+      const latestDoc = querySnapshot.docs[0];
+      const startTime = new Date(latestDoc.data().startTime);
+      const endTime = new Date(now);
+
+      // Calculate the total hours worked
+      const hoursWorked = ((endTime - startTime) / (1000 * 60 * 60)).toFixed(2); // Convert milliseconds to hours
+
+      // Update Firebase with endTime and totalHours
       await updateDoc(docRef, {
         endTime: now,
         status: "Completed",
+        totalHours: hoursWorked, // Store total hours worked
       });
+
       setIsClockedIn(false);
       setActiveDocId(null);
+      setTotalHours(hoursWorked); // Store in state for UI display
     } catch (err) {
       setError("Error clocking out. Please try again.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -118,6 +154,13 @@ function Hours() {
             >
               {isClockedIn ? "Clock Out" : "Clock In"}
             </Button>
+          )}
+
+          {/* Display Total Hours Worked */}
+          {totalHours !== null && (
+            <Typography variant="h6" sx={{ marginTop: 2, color: "green" }}>
+              Shift Duration: {totalHours} hours
+            </Typography>
           )}
         </Box>
       </CardContent>
