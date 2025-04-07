@@ -137,6 +137,7 @@ function Login() {
               required
               fullWidth
               variant="outlined"
+              autoFocus
             />
           </FormControl>
           <FormControlLabel
