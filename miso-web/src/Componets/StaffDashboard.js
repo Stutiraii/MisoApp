@@ -5,10 +5,10 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChatIcon from "@mui/icons-material/Chat";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import Hours from "./Hours";
+
 import ViewSchedule from "./ViewSchedule";
-import ChatPage from "./MessageContainer";
-import SidebarPage from "./MessageContainer";
+import Sidebar from "./msgBar/Sidebar";
+import Chat from "./msgBar/Chat";
 import { MsgContextProvider } from "./Context/MsgContext";
 
 function StaffDashboard() {
@@ -52,7 +52,7 @@ function StaffDashboard() {
         <Grid container spacing={3}>
     
           {/* ViewSchedule Component */}
-          <Grid item xs={12} md={6}>
+          <Grid size={12} md={6}>
             <Card elevation={4} sx={{ height: "100%" }}>
               <CardContent>
                 <ViewSchedule />
@@ -64,8 +64,8 @@ function StaffDashboard() {
         {/* Additional Routes for Sidebar & Chat */}
         <MsgContextProvider>
           <Routes>
-            <Route path="/sidebar" element={<SidebarPage />} />
-            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/sidebar" element={<Sidebar />} />
+            <Route path="/chat" element={<Chat />} />
           </Routes>
         </MsgContextProvider>
       </Box>

@@ -57,14 +57,18 @@ function ViewSchedule() {
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+  
     const weeklyTotal = records
       .filter(record => {
+        if (!record.startTime) return false;
         const recordDate = parseISO(record.startTime);
         return recordDate >= weekStart && recordDate <= weekEnd;
       })
       .reduce((sum, record) => sum + parseFloat(record.totalHours || 0), 0);
+  
     setWeeklyHours(weeklyTotal.toFixed(2));
   };
+  
   const fetchActiveClockIn = async () => {
     try {
       const q = query(
@@ -85,8 +89,8 @@ function ViewSchedule() {
     }
   };
 
-   // Handle Clock-In
-   const handleClockIn = async () => {
+  // Handle Clock-In
+  const handleClockIn = async () => {
     setError(null);
     setLoading(true);
     setTotalHours(null); // Reset total hours on new shift
@@ -163,32 +167,43 @@ function ViewSchedule() {
     }
   };
 
+  // Helper function to handle both ISO strings and Firestore Timestamp
+  const convertToDate = (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return parseISO(value); // If it's a string, parse it
+    if (value.toDate) return value.toDate(); // If it's a Firestore Timestamp, convert it
+    return null;
+  };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Typography variant="h4">Your Schedule</Typography>
-      <FullCalendar plugins={[dayGridPlugin, timeGridPlugin]} initialView="dayGridMonth" events={shifts.map(shift => ({
-        id: shift.id,
-        title: `${shift.role} (${shift.shiftStart} - ${shift.shiftEnd})`,
-        start: `${shift.date}T${shift.shiftStart}`,
-        end: `${shift.date}T${shift.shiftEnd}`
-      }))} height="auto" contentHeight={400} />
-
+      <FullCalendar 
+        plugins={[dayGridPlugin, timeGridPlugin]} 
+        initialView="dayGridMonth" 
+        events={shifts.map(shift => ({
+          id: shift.id,
+          title: `${shift.role} (${shift.shiftStart} - ${shift.shiftEnd})`,
+          start: `${shift.date}T${shift.shiftStart}`,
+          end: `${shift.date}T${shift.shiftEnd}`
+        }))} 
+        height="auto" 
+        contentHeight={400} 
+      />
 
       <Card sx={{ padding: 2, marginY: 2 }}>
         <Typography variant="h6">Weekly Hours Worked: {weeklyHours} hrs</Typography>
       </Card>
 
+      <Button
+        variant="contained"
+        color={isClockedIn ? "secondary" : "primary"}
+        sx={{ width: "100%", padding: "12px", fontSize: "16px", marginTop: 2 }}
+        onClick={isClockedIn ? handleClockOut : handleClockIn}
+      >
+        {isClockedIn ? "Clock Out" : "Clock In"}
+      </Button>
 
-          <Button
-              variant="contained"
-              color={isClockedIn ? "secondary" : "primary"}
-              sx={{ width: "100%", padding: "12px", fontSize: "16px", marginTop: 2 }}
-              onClick={isClockedIn ? handleClockOut : handleClockIn}
-              >
-                {isClockedIn ? "Clock Out" : "Clock In"}
-
-            </Button>
       {/* Upcoming Shifts Table */}
       <Typography variant="h6" sx={{ marginTop: 2 }}>Upcoming Shifts</Typography>
       <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
@@ -227,19 +242,25 @@ function ViewSchedule() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {attendance.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell>{format(parseISO(record.startTime), "yyyy-MM-dd")}</TableCell>
-                <TableCell>{format(parseISO(record.startTime), "HH:mm")}</TableCell>
-                <TableCell>{record.endTime ? format(parseISO(record.endTime), "HH:mm") : "-"}</TableCell>
-                <TableCell>{record.totalHours} hrs</TableCell>
-              </TableRow>
-            ))}
+            {attendance.map((record) => {
+              let startTime, endTime;
+
+              // Use the helper function to safely handle both ISO strings and Firestore Timestamps
+              startTime = convertToDate(record.startTime);
+              endTime = convertToDate(record.endTime);
+
+              return (
+                <TableRow key={record.id}>
+                  <TableCell>{startTime ? format(startTime, "yyyy-MM-dd") : "-"}</TableCell>
+                  <TableCell>{startTime ? format(startTime, "HH:mm") : "-"}</TableCell>
+                  <TableCell>{endTime ? format(endTime, "HH:mm") : "-"}</TableCell>
+                  <TableCell>{record.totalHours} hrs</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
-
-      
     </Box>
   );
 }

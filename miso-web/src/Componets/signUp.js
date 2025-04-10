@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"; // Import sendEmailVerification
 import { TextField, Button, Typography, Box, FormControl, FormLabel } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import MuiCard from '@mui/material/Card';
@@ -25,16 +25,16 @@ function SignUp() {
 
     try {
       // SignUp logic
-      await createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          alert("Sign-up successful!");
-          redirectToLogin(); // Redirect to the login page after successful signup
-        })
-        .catch((err) => {
-          setError("Sign-up failed: " + err.message);
-        });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Send email verification
+      await sendEmailVerification(user);
+
+      alert("Sign-up successful! Please check your email for a verification link.");
+      redirectToLogin(); // Redirect to the login page after successful signup
     } catch (err) {
-      setError("Error: " + err.message);
+      setError("Sign-up failed: " + err.message);
     }
   };
 

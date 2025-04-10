@@ -12,6 +12,7 @@ export const MsgContextProvider = ({ children }) => {
     chatId: null,
     user: null,
     currentUser: null,
+    selectedUser: null,  // Add selectedUser in the state
     messages: [],
   };
 
@@ -38,6 +39,12 @@ export const MsgContextProvider = ({ children }) => {
           messages: action.payload || [],
         };
 
+      case "SET_SELECTED_USER":
+        return {
+          ...state,
+          selectedUser: action.payload,  // Update selectedUser in the state
+        };
+
       default:
         return state;
     }
@@ -59,6 +66,10 @@ export const MsgContextProvider = ({ children }) => {
       console.warn("Current user is not set yet!");
       return;
     }
+
+    // Dispatch the action to update selectedUser in the state
+    dispatch({ type: "SET_SELECTED_USER", payload: selectedUser });
+
     dispatch({ type: "CHANGE_USER", payload: selectedUser });
   };
 

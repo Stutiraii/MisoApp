@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useFirebase } from "../Context/firebaseContext";
 import { useChat } from "../Context/ChatContext";
 import {
@@ -7,6 +7,12 @@ import {
   TextField,
   Typography,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -26,17 +32,32 @@ import { MsgContext } from "../Context/MsgContext";
 const Search = () => {
   const { db } = useFirebase();
   const auth = getAuth();
-  const { selectedUser, setSelectedUser } = useContext(MsgContext);
+  const { data, setSelectedUser } = useContext(MsgContext);
+  const { selectedUser } = data;
+
   const [username, setUsername] = useState("");
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+
+  useEffect(() => {
+    // Fetch all users when component mounts
+    const fetchUsers = async () => {
+      try {
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const users = usersSnapshot.docs
+          .map(doc => doc.data())
+          .filter(user => user.uid !== auth.currentUser?.uid); // exclude self
+        setAllUsers(users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [db, auth.currentUser]);
 
   const handleSearch = async () => {
-    if (!auth.currentUser) {
-      console.error("No authenticated user found.");
-      return;
-    }
-
     if (!username.trim()) {
       setErr(true);
       return;
@@ -51,15 +72,13 @@ const Search = () => {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        console.log("✅ User found:", userData);
         setSelectedUser(userData);
         setErr(false);
       } else {
-        console.warn("⚠ User not found.");
         setErr(true);
       }
     } catch (error) {
-      console.error("🚨 Error searching user:", error);
+      console.error("Error searching user:", error);
       setErr(true);
     } finally {
       setLoading(false);
@@ -72,24 +91,19 @@ const Search = () => {
     }
   };
 
-  const handleSelect = async () => {
-    if (!auth.currentUser || !selectedUser) {
-      console.error("⚠ Cannot start chat: Missing currentUser or selectedUser.");
-      return;
-    }
+  const handleSelect = async (user = selectedUser) => {
+    if (!auth.currentUser || !user) return;
 
     const combinedId =
-      auth.currentUser.uid > selectedUser.uid
-        ? auth.currentUser.uid + selectedUser.uid
-        : selectedUser.uid + auth.currentUser.uid;
+      auth.currentUser.uid > user.uid
+        ? auth.currentUser.uid + user.uid
+        : user.uid + auth.currentUser.uid;
 
     try {
       const chatDocRef = doc(db, "chats", combinedId);
       const chatDoc = await getDoc(chatDocRef);
 
       if (!chatDoc.exists()) {
-        console.log("💬 Creating a new chat...");
-
         await setDoc(chatDocRef, { messages: [] });
 
         const currentUserInfo = {
@@ -99,9 +113,9 @@ const Search = () => {
         };
 
         const otherUserInfo = {
-          uid: selectedUser.uid,
-          displayName: selectedUser.name,
-          photoURL: selectedUser.photoURL || null,
+          uid: user.uid,
+          displayName: user.name,
+          photoURL: user.photoURL || null,
         };
 
         await updateDoc(doc(db, "userChats", auth.currentUser.uid), {
@@ -109,24 +123,18 @@ const Search = () => {
           [`${combinedId}.date`]: serverTimestamp(),
         });
 
-        await updateDoc(doc(db, "userChats", selectedUser.uid), {
+        await updateDoc(doc(db, "userChats", user.uid), {
           [`${combinedId}.userInfo`]: currentUserInfo,
           [`${combinedId}.date`]: serverTimestamp(),
         });
-
-        console.log("✅ Chat successfully created!");
-      } else {
-        console.log("⚡ Chat already exists.");
       }
+
+      setSelectedUser(user);
+      setUsername("");
     } catch (error) {
-      console.error("🚨 Error handling chat selection:", error);
+      console.error("Error handling chat selection:", error);
     }
-
-    // Preserve selectedUser but clear the input field
-    setUsername("");
   };
-
-  console.log("🔍 Selected User:", selectedUser);
 
   return (
     <SearchContainer>
@@ -136,23 +144,16 @@ const Search = () => {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         onKeyDown={handleKey}
-        sx={{ marginBottom: 2, width: "100%", maxWidth: "400px" }}
+        sx={{ mb: 2, width: "100%", maxWidth: "400px" }}
         error={err}
         helperText={err ? "User not found" : ""}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
         <Button
           variant="contained"
           onClick={handleSearch}
-          sx={{ marginRight: 2, width: "150px" }}
+          sx={{ width: "150px" }}
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} /> : "Search"}
@@ -160,13 +161,54 @@ const Search = () => {
       </Box>
 
       {selectedUser && (
-        <Box sx={{ marginTop: 2, textAlign: "center" }}>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
           <Typography variant="h6">{selectedUser.name}</Typography>
-          <Button onClick={handleSelect} variant="contained" sx={{ marginTop: 1 }}>
+          <Button
+            onClick={() => handleSelect(selectedUser)}
+            variant="contained"
+            sx={{ mt: 1 }}
+          >
             Start Chat
           </Button>
         </Box>
       )}
+
+      <Paper
+        elevation={2}
+        sx={{
+          width: "100%",
+          maxWidth: "400px",
+          maxHeight: "300px",
+          overflowY: "auto",
+          p: 1,
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mb: 1, textAlign: "center" }}>
+          All Users
+        </Typography>
+        <List>
+          {allUsers.map((user) => (
+            <ListItem
+              key={user.uid}
+              button
+              onClick={() => handleSelect(user)}
+              sx={{
+                borderRadius: 2,
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar src={user.photoURL || ""}>
+                  {user.name?.charAt(0)}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={user.name} />
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
     </SearchContainer>
   );
 };
@@ -175,11 +217,9 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  justifyContent: "center",
-  height: "100vh",
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   width: "100%",
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: theme.palette.background.default,
 }));
 
 export default Search;

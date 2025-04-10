@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useFirebase } from "./Context/firebaseContext";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { TextField, Button, Typography, Box, FormControl, FormLabel, FormControlLabel, Checkbox } from "@mui/material";
+import { sendPasswordResetEmail } from "firebase/auth"; // Import sendPasswordResetEmail
+import { TextField, Button, Typography, Box, FormControl, FormLabel } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
@@ -18,21 +19,23 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
     try {
-      // Login logic
-      await signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          if (!auth.currentUser.emailVerified) {
-             setError("Please verify your email before logging in.");
-          } else {
-            alert("Login successful!");
-            redirectToDashboard(); // Redirect to the dashboard
-          }
-        })
-        .catch((err) => {
-          setError("Login failed: " + err.message);
-        });
+      await signInWithEmailAndPassword(auth, email, password);
+      redirectToDashboard(); 
     } catch (err) {
-      setError("Error: " + err.message);
+      setError("Login failed: " + err.message);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent! Please check your inbox.");
+    } catch (err) {
+      setError("Error sending password reset email: " + err.message);
     }
   };
 
@@ -67,6 +70,8 @@ function Login() {
     height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
     minHeight: '100%',
     padding: theme.spacing(2),
+    justifyContent: 'center', // Center the form vertically
+    alignItems: 'center', // Center the form horizontally
     [theme.breakpoints.up('sm')]: {
       padding: theme.spacing(4),
     },
@@ -97,6 +102,11 @@ function Login() {
         >
           Login
         </Typography>
+        {error && (
+          <Typography color="error" variant="body2" align="center">
+            {error}
+          </Typography>
+        )}
         <Box
           component="form"
           onSubmit={handleLogin}
@@ -137,13 +147,8 @@ function Login() {
               required
               fullWidth
               variant="outlined"
-              autoFocus
             />
           </FormControl>
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
           <Button
             type="submit"
             fullWidth
@@ -156,6 +161,15 @@ function Login() {
           </Button>
         </Box>
 
+        <Typography
+          variant="body2"
+          color="primary"
+          align="center"
+          sx={{ mt: 2 }}
+          onClick={handleForgotPassword} // Forgot password logic
+        >
+          Forgot Password?
+        </Typography>
         <Typography
           variant="body2"
           color="primary"

@@ -37,31 +37,69 @@ export const FirebaseProvider = ({ children }) => {
     return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
-  // Firebase Cloud Messaging (FCM) setup
+  useEffect(() => {
+    if (currentUser) {
+      const messaging = getMessaging(app);
+  
+      // Request permission to show notifications
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          // Get the FCM token
+          getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
+            .then((currentToken) => {
+              if (currentToken) {
+                setMessagingToken(currentToken); // Store token
+                console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
+              } else {
+                console.log("No registration token available. Request permission to generate one.");
+              }
+            })
+            .catch((err) => {
+              console.error("An error occurred while retrieving token: ", err);
+            });
+        } else {
+          console.log("Notification permission denied.");
+        }
+      });
+    }
+  }, [currentUser]);
+
+  // Manually refresh token
   useEffect(() => {
     if (currentUser) {
       const messaging = getMessaging(app);
 
-      // Get the FCM token
-      getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
-        .then((currentToken) => {
-          if (currentToken) {
-            setMessagingToken(currentToken); // Store token
-            console.log("FCM Token: ", currentToken); // Can be sent to server for push notifications
-          } else {
-            console.log("No registration token available. Request permission to generate one.");
+      const refreshToken = async () => {
+        try {
+          const newToken = await getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY });
+          if (newToken) {
+            setMessagingToken(newToken); // Update the token
+            console.log("FCM Token refreshed: ", newToken);
           }
-        })
-        .catch((err) => {
-          console.error("An error occurred while retrieving token: ", err);
-        });
+        } catch (err) {
+          console.error("An error occurred while refreshing token: ", err);
+        }
+      };
+
+      // Refresh the token when the app is in use or periodically
+      refreshToken();
     }
   }, [currentUser]);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then((registration) => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+  }
+  
 
-  // Logout function
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
+        setMessagingToken(null);  // Clear the token on logout
         console.log("User logged out");
       })
       .catch((error) => {
@@ -70,7 +108,7 @@ export const FirebaseProvider = ({ children }) => {
   };
 
   return (
-    <FirebaseContext.Provider value={{ auth, currentUser, db, handleLogout }}>
+    <FirebaseContext.Provider value={{ auth, currentUser, db, messagingToken, handleLogout }}>
       {children}
     </FirebaseContext.Provider>
   );

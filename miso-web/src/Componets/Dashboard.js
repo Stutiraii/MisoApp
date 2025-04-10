@@ -5,6 +5,7 @@ import ManageInventory from "./ManageInventory";
 import ShiftCalendar from "./ShiftCalendar";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import AdminSchedule from "./AdminSchedule";
+import Sidebar from "./msgBar/Sidebar";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { CalendarMonth, Inventory, Schedule, AdminPanelSettings, People, AttachMoney, Warning } from "@mui/icons-material";
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography,
@@ -17,6 +18,7 @@ import ViewSchedule from "./ViewSchedule";
 import Stack from "@mui/material/Stack";
 import ColorModeContext from "../customizations/ColorModeContext";
 
+
 function Dashboard() {
   const { currentUser, handleLogout, firebase, db } = useFirebase(); // Accessing Firebase context
   const [selectedComponent, setSelectedComponent] = useState("StaffDashboard");
@@ -27,6 +29,7 @@ function Dashboard() {
   const theme = useTheme();
   const navigate = useNavigate();
   const colorMode = useContext(ColorModeContext);
+  const [drawerOpen, setDrawerOpen] = useState(false); 
 
   
   
@@ -62,16 +65,13 @@ function Dashboard() {
     ManageInventory: <ManageInventory />,
     ShiftCalendar: <ShiftCalendar />,
     AdminSchedule: <AdminSchedule />,
-    CreateShifts: <ViewSchedule />
-
+    CreateShifts: <ViewSchedule />,
+    Messages: <Sidebar />
   };
 
   // Example data for stats (replace with dynamic data)
   const stats = {
-    activeShifts: 15,
-    lowInventory: 5,
-    totalPayroll: 5000,
-    pendingLeaveRequests: 3,
+ 
   };
 
   // Fetch the staff data from Firestore and count the staff
@@ -130,6 +130,10 @@ function Dashboard() {
       backgroundColor: theme.palette.background.paper,
       color: theme.palette.text.primary,
     }));
+    const handleToggleDrawer = () => {
+      setDrawerOpen(!drawerOpen);
+    };
+  
 
   return (
     <DashboardContainer
@@ -209,8 +213,8 @@ function Dashboard() {
           Dashboard Overview
         </Typography>
 
-        {/* Dashboard Content */}
-        {selectedComponent === "Dashboard" ? (
+          {/* Dashboard Content */}
+          {selectedComponent === "Dashboard" ? (
           <>
             {/* Dashboard Cards */}
             <Grid container spacing={3}>
@@ -223,15 +227,7 @@ function Dashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <CalendarMonth sx={{ fontSize: 40 }} />
-                    <Typography variant="h6" mt={1}>Active Shifts</Typography>
-                    <Typography variant="h4">{stats.activeShifts}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+          
               <Grid item xs={12} sm={6} md={3}>
                 <Card>
                   <CardContent>
@@ -241,19 +237,11 @@ function Dashboard() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <AttachMoney sx={{ fontSize: 40 }} />
-                    <Typography variant="h6" mt={1}>Total Payroll</Typography>
-                    <Typography variant="h4">${stats.totalPayroll}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+             
             </Grid>
 
             {/* Quick Actions Section */}
-            <Typography variant="h5" gutterBottom>Quick Actions</Typography>
+           <Typography variant="h5" gutterBottom>Quick Actions</Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} md={3}>
                 <Button onClick={handleEditShifts} fullWidth variant="contained" color="primary">Create Shifts</Button>
@@ -261,9 +249,7 @@ function Dashboard() {
               <Grid item xs={12} sm={6} md={3}>
                 <Button fullWidth variant="contained" color="primary">Manage Staff</Button>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Button fullWidth variant="contained" color="primary">Approve Payroll</Button>
-              </Grid>
+      
               <Grid item xs={12} sm={6} md={3}>
                 <Button onClick={handleViewInventory}fullWidth variant="contained" color="primary">View Inventory</Button>
               </Grid>

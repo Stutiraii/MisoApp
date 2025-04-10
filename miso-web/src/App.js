@@ -38,7 +38,10 @@ function App() {
         {/* Dashboard Route */}
         <Route
           path="/dashboard/*"
-          element={<PrivateRoute user={user} element={<Dashboard />} />}
+          element={
+          <MsgContextProvider>
+          <PrivateRoute user={user} element={<Dashboard />} />
+          </MsgContextProvider>}
         />
 
         <Route

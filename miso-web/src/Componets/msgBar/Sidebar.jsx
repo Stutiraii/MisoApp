@@ -1,38 +1,57 @@
-import React, { useState } from "react";
-import { Button, Box, Drawer, Divider, Typography, useTheme, ThemeProvider, createTheme, useMediaQuery } from "@mui/material";
+import React, { useState, useContext } from "react";
+import {
+  Box,
+  Button,
+  Drawer,
+  Divider,
+  Typography,
+  useTheme,
+  ThemeProvider,
+  createTheme,
+  useMediaQuery,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
-import Navbar from "./Navbar";
 import Search from "./Search";
 import Chat from "./Chat";
+import { MsgContext } from "../Context/MsgContext";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
 
-// Custom themes for light and dark modes
+// Custom themes
 const lightTheme = createTheme({
   palette: {
     mode: "light",
+    background: {
+      default: "#f7f7f7",
+    },
   },
 });
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
+    background: {
+      default: "#121212",
+    },
   },
 });
 
 const Sidebar = () => {
-  const [themeMode, setThemeMode] = useState("dark"); // state to toggle theme
+  const [themeMode, setThemeMode] = useState("dark");
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md")); // Detect mobile screens
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const { data, setSelectedUser } = useContext(MsgContext);
+  const { selectedUser } = data;
 
-  // Styled components for MUI
   const SidebarContainer = styled(Box)(({ theme }) => ({
     display: "flex",
     height: "100vh",
-    padding: theme.spacing(2),
-    background: theme.palette.mode === "dark" ? "rgb(33, 33, 33)" : "white",
     width: "100%",
+    background: theme.palette.background.default,
   }));
 
-  // Toggle theme mode
   const toggleTheme = () => {
     setThemeMode(themeMode === "dark" ? "light" : "dark");
   };
@@ -40,72 +59,97 @@ const Sidebar = () => {
   return (
     <ThemeProvider theme={themeMode === "dark" ? darkTheme : lightTheme}>
       <SidebarContainer>
-        {/* Sidebar with Drawer */}
+        {/* Sidebar / Drawer */}
         <Drawer
           sx={{
-            width: 240,
+            width: 280,
             flexShrink: 0,
             "& .MuiDrawer-paper": {
-              width: 250,
+              width: 280,
               boxSizing: "border-box",
-              backgroundColor: "#212121", // Dark background for sidebar
+              backgroundColor: themeMode === "dark" ? "#1e1e1e" : "#ffffff",
               padding: 2,
-              color: "#fff", // Light text in dark sidebar
+              color: themeMode === "dark" ? "#fff" : "#000",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              boxShadow: "2px 0 8px rgba(0,0,0,0.1)",
             },
           }}
-          variant={isMobile ? "temporary" : "permanent"} // Make sidebar collapsible on mobile
+          variant={isMobile ? "temporary" : "permanent"}
           anchor="left"
-          open={!isMobile || undefined} // Conditionally control drawer visibility on mobile
+          open={!isMobile || undefined}
         >
-          <Box sx={{ paddingBottom: 2 }}>
-            <Typography variant="h6" sx={{ padding: 1, fontWeight: "bold" }}>
-              ChatApp
-            </Typography>
-          </Box>
-
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              pl: 1,
+              color: themeMode === "dark" ? "#90caf9" : "#1976d2",
+              letterSpacing: 1,
+            }}
+          >
+            ChatApp
+          </Typography>
           <Divider />
-
-          {/* Navbar, Search, and Chats Section */}
-          <Box sx={{ paddingTop: 2 }}>
-            <Navbar />
-            <Search />
-            <Chat />
-          </Box>
+          <Search />
         </Drawer>
 
-        {/* Main Content Section for Messages */}
-        <Box sx={{ flexGrow: 1, padding: 3, color: "#fff" }}>
+        {/* Main Chat Section */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            padding: 3,
+            overflowY: "auto",
+            backgroundColor: themeMode === "dark" ? "#121212" : "#f5f5f5",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Typography
             component="h1"
             variant="h4"
             sx={{
-              width: "100%",
-              fontSize: "clamp(2rem, 10vw, 2.15rem)",
+              fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
               textAlign: "center",
-              marginBottom: 2,
+              mb: 3,
+              color: themeMode === "dark" ? "#fff" : "#333",
             }}
           >
-            Messages
+            {selectedUser ? `Chat with ${selectedUser.name}` : "Messages"}
           </Typography>
-          <Chat />
+
+          {selectedUser ? (
+            <Chat />
+          ) : (
+            <Typography textAlign="center" sx={{ opacity: 0.7 }}>
+              Select a user to start chatting.
+            </Typography>
+          )}
         </Box>
       </SidebarContainer>
-      
-      {/* Button to toggle theme */}
-      <Button
-        variant="contained"
-        color="secondary"
-        sx={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          borderRadius: "50%",
-          padding: "10px 20px",
-        }}
-        onClick={toggleTheme}
-      >
-        {themeMode === "dark" ? "Light Mode" : "Dark Mode"}
-      </Button>
+
+      {/* Floating Theme Toggle */}
+      <Tooltip title={themeMode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+        <IconButton
+          onClick={toggleTheme}
+          sx={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            backgroundColor: themeMode === "dark" ? "#424242" : "#e0e0e0",
+            color: themeMode === "dark" ? "#fff" : "#333",
+            borderRadius: "50%",
+            boxShadow: 3,
+            zIndex: 1300,
+            "&:hover": {
+              backgroundColor: themeMode === "dark" ? "#616161" : "#d5d5d5",
+            },
+          }}
+        >
+          {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
+      </Tooltip>
     </ThemeProvider>
   );
 };
