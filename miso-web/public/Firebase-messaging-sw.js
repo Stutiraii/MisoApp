@@ -6,7 +6,7 @@ importScripts(
 );
 
 firebase.initializeApp({
-  apiKey: "AIzaSyAnfnZ6vD2cKjGQb6PKfnFrTjUI06rBdLY",
+  apiKey: "AIzaSyBdwSUjIjzR9OW69xjhdQX9xpVIY2ND0Rk",
   authDomain: "misoapp-42785.firebaseapp.com",
   projectId: "misoapp-42785",
   storageBucket: "misoapp-42785.firebasestorage.app",
