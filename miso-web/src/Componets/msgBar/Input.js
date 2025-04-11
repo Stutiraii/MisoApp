@@ -21,7 +21,7 @@ const Input = () => {
   const { db, storage, currentUser } = useFirebase();
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
-  const [loading, setLoading] = useState(false);  // Loading state for file uploads
+  const [loading, setLoading] = useState(false); // Loading state for file uploads
 
   const { data } = useContext(MsgContext);
 
@@ -30,15 +30,10 @@ const Input = () => {
     const storageRef = ref(storage, `images/${uuid()}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
     return new Promise((resolve, reject) => {
-      uploadTask.on(
-        "state_changed",
-        null,
-        reject,
-        async () => {
-          const imgURL = await getDownloadURL(uploadTask.snapshot.ref());
-          resolve(imgURL);
-        }
-      );
+      uploadTask.on("state_changed", null, reject, async () => {
+        const imgURL = await getDownloadURL(uploadTask.snapshot.ref());
+        resolve(imgURL);
+      });
     });
   };
 
@@ -50,7 +45,7 @@ const Input = () => {
       let imgURL = null;
 
       if (img) {
-        imgURL = await uploadImage(img);  // Upload image and get URL
+        imgURL = await uploadImage(img); // Upload image and get URL
       }
 
       // Check if chat document exists, if not create a new one
@@ -97,12 +92,15 @@ const Input = () => {
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
-      setLoading(false);  // Reset loading state
+      setLoading(false); // Reset loading state
     }
   };
 
   return (
-    <div className="input" style={{ display: "flex", alignItems: "center", padding: "10px" }}>
+    <div
+      className="input"
+      style={{ display: "flex", alignItems: "center", padding: "10px" }}
+    >
       <TextField
         label="Type something..."
         variant="outlined"
@@ -150,7 +148,7 @@ const Input = () => {
         variant="contained"
         color="primary"
         onClick={handleSend}
-        disabled={!text.trim() && !img || loading}
+        disabled={(!text.trim() && !img) || loading}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : "Send"}
       </Button>

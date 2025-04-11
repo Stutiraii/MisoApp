@@ -13,22 +13,30 @@ const ColorModeProvider = ({ children }) => {
   useEffect(() => {
     // If the mode is 'system', determine the theme from the user's OS preference
     if (mode === "system") {
-      const systemMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      const systemMode = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
       setMode(systemMode);
     }
   }, [mode]);
 
   useEffect(() => {
     if (mode !== "system") {
-      localStorage.setItem("themeMode", mode);  // Save theme mode to localStorage
+      localStorage.setItem("themeMode", mode); // Save theme mode to localStorage
     }
   }, [mode]);
 
   // Create a theme using Material-UI's createTheme
   const theme = createTheme({
     palette: {
-      mode: mode === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : mode
-    }
+      mode:
+        mode === "system"
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : mode,
+    },
   });
 
   // Toggle between light and dark mode

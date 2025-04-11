@@ -12,7 +12,7 @@ export const MsgContextProvider = ({ children }) => {
     chatId: null,
     user: null,
     currentUser: null,
-    selectedUser: null,  // Add selectedUser in the state
+    selectedUser: null, // Add selectedUser in the state
     messages: [],
   };
 
@@ -20,7 +20,7 @@ export const MsgContextProvider = ({ children }) => {
     switch (action.type) {
       case "CHANGE_USER":
         if (!action.payload || !state.currentUser) return state;
-        
+
         return {
           ...state,
           user: action.payload,
@@ -42,7 +42,7 @@ export const MsgContextProvider = ({ children }) => {
       case "SET_SELECTED_USER":
         return {
           ...state,
-          selectedUser: action.payload,  // Update selectedUser in the state
+          selectedUser: action.payload, // Update selectedUser in the state
         };
 
       default:

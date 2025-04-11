@@ -126,19 +126,6 @@ function ShiftCalendar() {
           : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
     }));
   
-    const CardContainer = styled(Card)(({ theme }) => ({
-      display: "flex",
-      flexDirection: "column",
-      alignSelf: "center",
-      width: "100%",
-      padding: theme.spacing(4),
-      gap: theme.spacing(2),
-      margin: "auto",
-      maxWidth: "900px",
-      backgroundColor: theme.palette.background.paper,
-      color: theme.palette.text.primary,
-    }));
-
   return (
     <div>
           <Typography component="h1" variant="h4" sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>

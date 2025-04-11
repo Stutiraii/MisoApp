@@ -17,6 +17,7 @@ import {
   Paper,
   Stack,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 const Chat = () => {
   const { data } = useContext(MsgContext);
@@ -65,102 +66,140 @@ const Chat = () => {
     setNewMsg("");
   };
 
-  return selectedUser ? (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "75vh",
-        maxHeight: "75vh",
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 2,
-        padding: 2,
-        backgroundColor: "background.paper",
-      }}
-    >
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Chat with {selectedUser.name}
-      </Typography>
+  // Chat Container Styles
+  const ChatContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    maxHeight: "100%",
+    width: "100%",
+    border: "1px solid",
+    alignItems: "center",
+    padding: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper,
+  }));
 
+  return selectedUser ? (
+    <ChatContainer>
       <Box
         sx={{
-          flex: 1,
-          overflowY: "auto",
-          paddingRight: 1,
-          marginBottom: 2,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          maxHeight: "100%",
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 2,
+          padding: 2,
+          backgroundColor: "background.paper",
         }}
       >
-        <Stack spacing={1}>
-          {messages.length > 0 ? (
-            messages.map((m) => (
-              <Box
-                key={m.id}
-                sx={{
-                  display: "flex",
-                  justifyContent:
-                    m.senderId === auth.currentUser.uid
-                      ? "flex-end"
-                      : "flex-start",
-                }}
-              >
-                <Paper
-                  elevation={3}
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+          {selectedUser.name}
+        </Typography>
+
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            paddingRight: 1,
+            marginBottom: 2,
+            display: "flex",
+            flexDirection: "column-reverse", // ensures new messages appear at the bottom
+          }}
+        >
+          <Stack spacing={2}>
+            {messages.length > 0 ? (
+              messages.map((m) => (
+                <Box
+                  key={m.id}
                   sx={{
-                    px: 3,
-                    py: 1.5,
-                    borderRadius: 3,
-                    maxWidth: "80%", // slightly wider bubbles
-                    backgroundColor:
+                    display: "flex",
+                    justifyContent:
                       m.senderId === auth.currentUser.uid
-                        ? "primary.main"
-                        : "grey.300",
-                    color:
-                      m.senderId === auth.currentUser.uid
-                        ? "#fff"
-                        : "text.primary",
+                        ? "flex-end"
+                        : "flex-start",
                   }}
                 >
-                  <Typography variant="body1">{m.text}</Typography>
-                </Paper>
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary" align="center">
-              No messages yet
-            </Typography>
-          )}
+                  <Paper
+                    elevation={3}
+                    sx={{
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 3,
+                      maxWidth: "80%",
+                      backgroundColor:
+                        m.senderId === auth.currentUser.uid
+                          ? "primary.main"
+                          : "grey.300",
+                      color:
+                        m.senderId === auth.currentUser.uid
+                          ? "#fff"
+                          : "text.primary",
+                      boxShadow: 2,
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ fontWeight: 400 }}>
+                      {m.text}
+                    </Typography>
+                  </Paper>
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body2" color="text.secondary" align="center">
+                No messages yet
+              </Typography>
+            )}
 
-          <div ref={chatEndRef} />
-        </Stack>
-      </Box>
+            <div ref={chatEndRef} />
+          </Stack>
+        </Box>
 
-      <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        sx={{ display: "flex", gap: 1 }}
-      >
-        <TextField
-          value={newMsg}
-          onChange={(e) => setNewMsg(e.target.value)}
-          placeholder="Type a message..."
-          fullWidth
-          size="small"
-          variant="outlined"
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          size="small"
-          sx={{ whiteSpace: "nowrap" }}
+        {/* Message Input Section */}
+        <Box
+          component="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          sx={{
+            display: "flex",
+            gap: 1,
+            marginTop: 2,
+            paddingBottom: 2,
+            alignItems: "center",
+          }}
         >
-          Send
-        </Button>
+          <TextField
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            placeholder="Type a message..."
+            fullWidth
+            size="small"
+            variant="outlined"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20px",
+              fontSize: "0.875rem", // adjust text size
+            }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            size="small"
+            sx={{
+              whiteSpace: "nowrap",
+              borderRadius: "20px",
+              padding: "8px 16px",
+              boxShadow: 2,
+              fontSize: "0.875rem", // adjust button size
+            }}
+          >
+            Send
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </ChatContainer>
   ) : (
     <Typography align="center" sx={{ mt: 4 }} color="text.secondary">
       Select a user to start chatting

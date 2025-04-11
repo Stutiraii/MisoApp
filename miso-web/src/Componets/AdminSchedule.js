@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { collection, addDoc, getDocs} from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import { Grid } from "@mui/material";
-import { getAuth } from "firebase/auth";
+import { format } from "date-fns";
 import {
-  Table, 
+  Table,
   TableBody,
-   TableCell,
-    TableContainer,
-     TableHead,
-      TableRow,
-       Paper, Typography, FormControl,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  FormControl,
   TextField,
   Button,
   Box,
@@ -18,7 +20,6 @@ import {
 } from "@mui/material";
 import MuiCard from "@mui/material/Card";
 import { styled, useTheme } from "@mui/material/styles";
-import Stack from "@mui/material/Stack";
 import ColorModeContext from "../customizations/ColorModeContext";
 
 function AdminSchedule() {
@@ -37,22 +38,19 @@ function AdminSchedule() {
   const [selectedUser, setSelectedUser] = useState("");
   const [newRole, setNewRole] = useState("");
   const [error, setError] = useState("");
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const [selectedShift, setSelectedShift] = useState({});
 
-   // State to manage current week start date and end date
-   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekDates());
+  // State to manage current week start date and end date
+  const [currentWeek, setCurrentWeek] = useState(getCurrentWeekDates());
 
-   // Get the start and end date of the current week (Monday to Sunday)
-   function getCurrentWeekDates(date = new Date()) {
-     const day = date.getDay(),
-       diff = date.getDate() - day + (day == 0 ? -6 : 1); // Adjust to Monday
-     const startOfWeek = new Date(date.setDate(diff));
-     const endOfWeek = new Date(startOfWeek);
-     endOfWeek.setDate(startOfWeek.getDate() + 6);
-     return { startOfWeek, endOfWeek };
-   }
- 
+  // Get the start and end date of the current week (Monday to Sunday)
+  function getCurrentWeekDates(date = new Date()) {
+    const day = date.getDay(),
+      diff = date.getDate() - day + (day == 0 ? -6 : 1); // Adjust to Monday
+    const startOfWeek = new Date(date.setDate(diff));
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return { startOfWeek, endOfWeek };
+  }
 
   const handleToggleWeek = (direction) => {
     // Toggle between previous and next week
@@ -72,7 +70,11 @@ function AdminSchedule() {
     const fetchShifts = async () => {
       const shiftsRef = collection(db, "shifts");
       const snapshot = await getDocs(shiftsRef);
-      const shiftsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const shiftsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log(shiftsData);
       setShifts(shiftsData);
     };
 
@@ -93,44 +95,50 @@ function AdminSchedule() {
     if (!acc[userId]) {
       acc[userId] = {};
     }
-    
-    acc[userId][shiftDate] = { shiftStart: shift.shiftStart, shiftEnd: shift.shiftEnd };
+
+    acc[userId][shiftDate] = {
+      shiftStart: shift.shiftStart,
+      shiftEnd: shift.shiftEnd,
+    };
     return acc;
   }, {});
-  
-  console.log("Shifts by User: ", shiftsByUser);  // Add this log to check the shifts mapping
- // Generate days of the week with date in the correct format
-const daysOfWeek = Array.from({ length: 7 }).map((_, i) => {
-  const date = new Date(currentWeek.startOfWeek);
-  date.setDate(date.getDate() + i); // Increment days
-  return { 
-    day: date.toLocaleDateString("en-US", { weekday: "long" }), 
-    date: date.toLocaleDateString("en-US")  // This will give you a format like "MM/DD/YYYY"
-  };
-});
+  console.log("Shifts by User:", shiftsByUser); // Debugging
 
+  // Generate days of the week for the current week
+  const daysOfWeek = Array.from({ length: 7 }).map((_, i) => {
+    const date = new Date(currentWeek.startOfWeek);
+    date.setDate(date.getDate() + i);
+    return {
+      day: format(date, "EEEE"),
+      date: format(date, "yyyy-MM-dd"),
+    };
+  });
 
-
-
- // handleAddRole function 
-const handleAddRole = async () => {
-  if (newRole.trim()) { // Only add role if not empty
-    try {
-      await addDoc(collection(db, "roles"), { name: newRole });
-      setNewRole("");
-      setError(""); 
-    } catch (error) {
-      setError("Error adding role: " + error.message);
+  // handleAddRole function
+  const handleAddRole = async () => {
+    if (newRole.trim()) {
+      // Only add role if not empty
+      try {
+        await addDoc(collection(db, "roles"), { name: newRole });
+        setNewRole("");
+        setError("");
+      } catch (error) {
+        setError("Error adding role: " + error.message);
+      }
     }
-  }
-};
-
+  };
 
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Reset error message
 
     if (!date || !shiftStart || !shiftEnd || !selectedRole || !selectedUser) {
       setError("Please fill all fields");
+      return;
+    }
+
+    if (shiftStart >= shiftEnd) {
+      setError("Shift start time must be earlier than shift end time.");
       return;
     }
 
@@ -139,7 +147,7 @@ const handleAddRole = async () => {
       setError("Invalid user selection");
       return;
     }
-    const roleToSubmit = selectedRole || null; 
+    const roleToSubmit = selectedRole || null;
 
     try {
       await addDoc(collection(db, "shifts"), {
@@ -163,7 +171,7 @@ const handleAddRole = async () => {
         },
       ]);
 
-      setError(""); // Clear any previous errors
+      setError("");
       setDate("");
       setShiftStart("");
       setShiftEnd("");
@@ -186,285 +194,292 @@ const handleAddRole = async () => {
 
   // Styled components for MUI
   const Card = styled(MuiCard)(({ theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    alignSelf: "center",
     width: "100%",
     padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    margin: "auto",
-    [theme.breakpoints.up("sm")]: {
-      maxWidth: "450px",
-    },
     boxShadow:
       theme.palette.mode === "dark"
-        ? "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px"
-        : "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+        ? "0px 5px 20px rgba(0,0,0,0.3)"
+        : "0px 5px 20px rgba(0,0,0,0.1)",
     backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
+    borderRadius: "12px",
+    marginBottom: theme.spacing(4),
   }));
 
-  const ScheduleContainer = styled(Stack)(({ theme }) => ({
-    height: "100vh",
-    minHeight: "100%",
+  const ScheduleContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
     padding: theme.spacing(2),
-    [theme.breakpoints.up("sm")]: {
-      padding: theme.spacing(4),
-    },
-    background:
-      theme.palette.mode === "dark"
-        ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))"
-        : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    height: "100vh",
+    background: theme.palette.mode === "dark" ? "#212121" : "#F5F5F5",
   }));
-
-  const generateSchedule = (users) => {
-    let schedule = {};
-    users.forEach((emp) => {
-      schedule[emp.id] = {}; // Initialize schedule for each user
-      days.forEach((day) => {
-        const randomShift = shifts[Math.floor(Math.random() * shifts.length)];
-        schedule[emp.id][day] = randomShift; // Assign random shift for each day
-      });
-    });
-    return schedule;
-  };
-
-  
+  const TableWrapper = styled(Paper)(({ theme }) => ({
+    width: "100%",
+    borderRadius: "8px",
+    marginTop: theme.spacing(4),
+    padding: theme.spacing(2),
+  }));
+  const FormContainer = styled(Box)(({ theme }) => ({
+    width: "100%",
+    display: "grid",
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  }));
 
   return (
     <Grid container spacing={4} sx={{ padding: "20px" }}>
-       <Grid item xs={12} sm={6}></Grid>
-    <ScheduleContainer
-      direction="column"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Button
-        onClick={colorMode.toggleColorMode}
-        sx={{ position: "fixed", top: "1rem", left: "1rem" }}
-      >
-        {theme.palette.mode === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
-      </Button>
-      <Card variant="outlined">
-        <Typography
-          component="h1"
-          variant="h4"
-          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-        >
-          Admin Schedule
-        </Typography>
-        <Box
-          component="form"
-          onSubmit={handleScheduleSubmit}
-          noValidate
+      {/* Admin Schedule Form */}
+      <Grid item xs={12} sm={6}>
+        <ScheduleContainer
           sx={{
+            height: "100vh",
+            minHeight: "100%",
             display: "flex",
             flexDirection: "column",
-            width: "100%",
-            gap: 2,
+            justifyContent: "left",
+            padding: "2rem",
           }}
         >
-          <FormControl>
-            <FormLabel htmlFor="date">Date</FormLabel>
-            <TextField
-              id="date"
-              type="date"
-              name="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="shiftStart">Shift Start</FormLabel>
-            <TextField
-              id="shiftStart"
-              select
-              name="shiftStart"
-              value={shiftStart}
-              onChange={(e) => setShiftStart(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              <option value="">Select Shift Start</option> {/* Add this */}
-              {timeOptions.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </TextField>
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="shiftEnd">Shift End</FormLabel>
-            <TextField
-              id="shiftEnd"
-              select
-              name="shiftEnd"
-              value={shiftEnd}
-              onChange={(e) => setShiftEnd(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              {timeOptions.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </TextField>
-          </FormControl>
-
-          <FormControl fullWidth>
-            <FormLabel htmlFor="Add Role">Add Role</FormLabel>
-            <TextField
-              id="Add Role"
-              name="Add Role"
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-              placeholder="Type or select a role"
-              select={false} // Remove `select` to allow text input
-            />
-
-            <Button
-              onClick={handleAddRole}
-              fullWidth
-              variant="contained"
-              color="secondary"
-              sx={{ mt: 2 }}
-            >
-              Add Role
-            </Button>
-            {error && (
-              <Typography color="error" sx={{ mt: 2 }}>
-                {error}
-              </Typography>
-            )}
-          </FormControl>
-
-          <FormControl>
-            <FormLabel htmlFor="user">User</FormLabel>
-            <TextField
-              id="user"
-              select
-              name="user"
-              value={selectedUser}
-              onChange={(e) => setSelectedUser(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </TextField>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel htmlFor="role">Role</FormLabel>
-            <TextField
-              id="role"
-              select
-              name="role"
-              value={selectedRole}
-              onChange={(e) => {
-                console.log("Selected role:", e.target.value); // Debugging
-                setSelectedRole(e.target.value);
-              }}
-              required
-              fullWidth
-              variant="outlined"
-              SelectProps={{
-                native: true,
-              }}
-            >
-              <option value="">Select a Role</option>{" "}
-              {/* Add a default option */}
-              {roles.map((role) => (
-                <option key={role.id} value={role.name}>
-                  {role.name}
-                </option>
-              ))}
-            </TextField>
-          </FormControl>
-
-          {error && <Typography color="error">{error}</Typography>}
           <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            sx={{ py: 2 }}
+            onClick={colorMode.toggleColorMode}
+            sx={{ position: "fixed", top: "1rem", left: "1rem" }}
           >
-            Save Shift
+            {theme.palette.mode === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
           </Button>
-          </Box>
-        </Card>
-    
-      
-  {/* Right Side: Shift Table */}
-  <Grid item xs={12} sm={6}>
-          <Paper sx={{ padding: "16px" }}>
-            <Typography variant="h6" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              Shift Table
-              <Button onClick={() => handleToggleWeek(-1)}>Previous Week</Button>
-              <Button onClick={() => handleToggleWeek(1)}>Next Week</Button>
-            </Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Staff</TableCell>
+
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+          >
+            Admin Schedule
+          </Typography>
+
+          <Card variant="outlined">
+            <FormContainer component="form" onSubmit={handleScheduleSubmit}>
+              <FormControl>
+                <FormLabel htmlFor="date">Date</FormLabel>
+                <TextField
+                  id="date"
+                  type="date"
+                  name="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  fullWidth
+                  variant="outlined"
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="shiftStart">Shift Start</FormLabel>
+                <TextField
+                  id="shiftStart"
+                  select
+                  name="shiftStart"
+                  value={shiftStart}
+                  onChange={(e) => setShiftStart(e.target.value)}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select Shift Start</option>
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </TextField>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="shiftEnd">Shift End</FormLabel>
+                <TextField
+                  id="shiftEnd"
+                  select
+                  name="shiftEnd"
+                  value={shiftEnd}
+                  onChange={(e) => setShiftEnd(e.target.value)}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select Shift End</option>
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </TextField>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <FormLabel htmlFor="newRole">Add Role</FormLabel>
+                <TextField
+                  id="newRole"
+                  name="newRole"
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Type or select a role"
+                />
+                <Button
+                  onClick={handleAddRole}
+                  fullWidth
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mt: 2 }}
+                >
+                  Add Role
+                </Button>
+                {error && (
+                  <Typography color="error" sx={{ mt: 2 }}>
+                    {error}
+                  </Typography>
+                )}
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="user">User</FormLabel>
+                <TextField
+                  id="user"
+                  select
+                  name="user"
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select User</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                    </option>
+                  ))}
+                </TextField>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="role">Role</FormLabel>
+                <TextField
+                  id="role"
+                  select
+                  name="role"
+                  value={selectedRole}
+                  onChange={(e) => {
+                    console.log("Selected role:", e.target.value); // Debugging
+                    setSelectedRole(e.target.value);
+                  }}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="">Select a Role</option>
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
+                </TextField>
+              </FormControl>
+
+              {error && <Typography color="error">{error}</Typography>}
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                sx={{ py: 2 }}
+              >
+                Save Shift
+              </Button>
+            </FormContainer>
+          </Card>
+        </ScheduleContainer>
+      </Grid>
+
+      {/* Shift Table */}
+      <Grid item xs={12} sm={6}>
+        <TableWrapper>
+          <Typography
+            variant="h6"
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "1rem",
+              fontSize: "2rem",
+              fontWeight: "bold",
+            }}
+          >
+            Shift Table
+            <Button onClick={() => handleToggleWeek(-1)}>Previous Week</Button>
+            <Button onClick={() => handleToggleWeek(1)}>Next Week</Button>
+          </Typography>
+
+          <TableContainer sx={{ minHeight: "400px", maxHeight: "600px" }}>
+            <Table sx={{ minWidth: "100%" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+                    Staff
+                  </TableCell>
+                  {daysOfWeek.map((day) => (
+                    <TableCell
+                      key={day.date}
+                      sx={{ fontSize: "1.1rem", fontWeight: "bold" }}
+                    >
+                      {day.day} ({day.date})
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.name}</TableCell>
                     {daysOfWeek.map((day) => (
                       <TableCell key={day.date}>
-                        {day.day} ({day.date})
+                        {shiftsByUser[user.id] &&
+                        shiftsByUser[user.id][day.date] ? (
+                          <>
+                            <Typography variant="body2">
+                              {shiftsByUser[user.id][day.date].shiftStart} -{" "}
+                              {shiftsByUser[user.id][day.date].shiftEnd}
+                            </Typography>
+                          </>
+                        ) : (
+                          <Typography variant="body2" color="textSecondary">
+                            No shift
+                          </Typography>
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
-                </TableHead>
-                <TableBody>
-  {users.map((user) => (
-    <TableRow key={user.id}>
-      <TableCell>{user.name}</TableCell>
-      {daysOfWeek.map((day) => (
-        <TableCell key={day.date}>
-          {
-            shiftsByUser[user.id] && shiftsByUser[user.id][day.date]
-              ? `${shiftsByUser[user.id][day.date].shiftStart} - ${shiftsByUser[user.id][day.date].shiftEnd}`
-              : '-' // Fallback if no shift is allocated
-          }
-        </TableCell>
-      ))}
-    </TableRow>
-  ))}
-</TableBody>
-
-
-
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-        </ScheduleContainer>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TableWrapper>
       </Grid>
-   
+    </Grid>
   );
 }
-
 export default AdminSchedule;

@@ -1,6 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useFirebase } from "../Context/firebaseContext";
-import { useChat } from "../Context/ChatContext";
 import {
   Box,
   Button,
@@ -46,8 +45,8 @@ const Search = () => {
       try {
         const usersSnapshot = await getDocs(collection(db, "users"));
         const users = usersSnapshot.docs
-          .map(doc => doc.data())
-          .filter(user => user.uid !== auth.currentUser?.uid); // exclude self
+          .map((doc) => doc.data())
+          .filter((user) => user.uid !== auth.currentUser?.uid); // exclude self
         setAllUsers(users);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -152,26 +151,15 @@ const Search = () => {
       <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
         <Button
           variant="contained"
+          fontWeight="bold"
           onClick={handleSearch}
           sx={{ width: "150px" }}
+          color="black"
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} /> : "Search"}
         </Button>
       </Box>
-
-      {selectedUser && (
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography variant="h6">{selectedUser.name}</Typography>
-          <Button
-            onClick={() => handleSelect(selectedUser)}
-            variant="contained"
-            sx={{ mt: 1 }}
-          >
-            Start Chat
-          </Button>
-        </Box>
-      )}
 
       <Paper
         elevation={2}
@@ -217,9 +205,7 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  padding: theme.spacing(3),
-  width: "100%",
-  backgroundColor: theme.palette.background.default,
+  padding: theme.spacing(2),
 }));
 
 export default Search;

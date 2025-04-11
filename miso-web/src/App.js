@@ -8,11 +8,10 @@ import ShiftCalendar from "./Componets/ShiftCalendar";
 import AdminSchedule from "./Componets/AdminSchedule"; // Import AdminSchedule
 import ViewSchedule from "./Componets/ViewSchedule"; // Import ViewSchedule
 import ManageInventory from "./Componets/ManageInventory"; // Import ManageInventory
-import Sidebar from "./Componets/msgBar/Sidebar";
+import Sidebar from "./Componets/msgBar/Messages";
 import Chat from "./Componets/msgBar/Chat";
 import { MsgContextProvider } from "./Componets/Context/MsgContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import "./styles/App.css";
 import { ColorModeProvider } from "./customizations/ColorModeContext";
 
 

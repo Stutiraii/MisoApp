@@ -2,9 +2,31 @@ import React, { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy, limit } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  doc,
+  query,
+  where,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { useFirebase } from "./Context/firebaseContext";
-import { Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button} from "@mui/material";
+import {
+  Box,
+  Typography,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+} from "@mui/material";
 import { format, startOfWeek, endOfWeek, parseISO, isAfter } from "date-fns";
 
 function ViewSchedule() {
@@ -45,7 +67,10 @@ function ViewSchedule() {
       const snapshot = await getDocs(attendanceRef);
       const records = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((record) => record.userId === currentUser.uid && record.status === "Completed");
+        .filter(
+          (record) =>
+            record.userId === currentUser.uid && record.status === "Completed"
+        );
       setAttendance(records);
       calculateWeeklyHours(records);
     } catch (error) {
@@ -57,18 +82,18 @@ function ViewSchedule() {
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-  
+
     const weeklyTotal = records
-      .filter(record => {
+      .filter((record) => {
         if (!record.startTime) return false;
         const recordDate = parseISO(record.startTime);
         return recordDate >= weekStart && recordDate <= weekEnd;
       })
       .reduce((sum, record) => sum + parseFloat(record.totalHours || 0), 0);
-  
+
     setWeeklyHours(weeklyTotal.toFixed(2));
   };
-  
+
   const fetchActiveClockIn = async () => {
     try {
       const q = query(
@@ -134,7 +159,11 @@ function ViewSchedule() {
       const docRef = doc(db, "attendance", activeDocId);
 
       // Fetch the start time from Firebase
-      const q = query(collection(db, "attendance"), where("userId", "==", currentUser.uid), where("status", "==", "Pending"));
+      const q = query(
+        collection(db, "attendance"),
+        where("userId", "==", currentUser.uid),
+        where("status", "==", "Pending")
+      );
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -178,21 +207,23 @@ function ViewSchedule() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Typography variant="h4">Your Schedule</Typography>
-      <FullCalendar 
-        plugins={[dayGridPlugin, timeGridPlugin]} 
-        initialView="dayGridMonth" 
-        events={shifts.map(shift => ({
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin]}
+        initialView="dayGridMonth"
+        events={shifts.map((shift) => ({
           id: shift.id,
           title: `${shift.role} (${shift.shiftStart} - ${shift.shiftEnd})`,
           start: `${shift.date}T${shift.shiftStart}`,
-          end: `${shift.date}T${shift.shiftEnd}`
-        }))} 
-        height="auto" 
-        contentHeight={400} 
+          end: `${shift.date}T${shift.shiftEnd}`,
+        }))}
+        height="auto"
+        contentHeight={400}
       />
 
       <Card sx={{ padding: 2, marginY: 2 }}>
-        <Typography variant="h6">Weekly Hours Worked: {weeklyHours} hrs</Typography>
+        <Typography variant="h6">
+          Weekly Hours Worked: {weeklyHours} hrs
+        </Typography>
       </Card>
 
       <Button
@@ -205,7 +236,9 @@ function ViewSchedule() {
       </Button>
 
       {/* Upcoming Shifts Table */}
-      <Typography variant="h6" sx={{ marginTop: 2 }}>Upcoming Shifts</Typography>
+      <Typography variant="h6" sx={{ marginTop: 2 }}>
+        Upcoming Shifts
+      </Typography>
       <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
         <Table>
           <TableHead>
@@ -217,14 +250,18 @@ function ViewSchedule() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {shifts.filter(shift => isAfter(parseISO(shift.date), new Date())).map((shift) => (
-              <TableRow key={shift.id}>
-                <TableCell>{format(parseISO(shift.date), "yyyy-MM-dd")}</TableCell>
-                <TableCell>{shift.role}</TableCell>
-                <TableCell>{shift.shiftStart}</TableCell>
-                <TableCell>{shift.shiftEnd}</TableCell>
-              </TableRow>
-            ))}
+            {shifts
+              .filter((shift) => isAfter(parseISO(shift.date), new Date()))
+              .map((shift) => (
+                <TableRow key={shift.id}>
+                  <TableCell>
+                    {format(parseISO(shift.date), "yyyy-MM-dd")}
+                  </TableCell>
+                  <TableCell>{shift.role}</TableCell>
+                  <TableCell>{shift.shiftStart}</TableCell>
+                  <TableCell>{shift.shiftEnd}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -251,9 +288,15 @@ function ViewSchedule() {
 
               return (
                 <TableRow key={record.id}>
-                  <TableCell>{startTime ? format(startTime, "yyyy-MM-dd") : "-"}</TableCell>
-                  <TableCell>{startTime ? format(startTime, "HH:mm") : "-"}</TableCell>
-                  <TableCell>{endTime ? format(endTime, "HH:mm") : "-"}</TableCell>
+                  <TableCell>
+                    {startTime ? format(startTime, "yyyy-MM-dd") : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {startTime ? format(startTime, "HH:mm") : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {endTime ? format(endTime, "HH:mm") : "-"}
+                  </TableCell>
                   <TableCell>{record.totalHours} hrs</TableCell>
                 </TableRow>
               );
