@@ -4,16 +4,15 @@ importScripts(
 importScripts(
   "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"
 );
-
-firebase.initializeApp({
-  apiKey: "AIzaSyBdwSUjIjzR9OW69xjhdQX9xpVIY2ND0Rk",
-  authDomain: "misoapp-42785.firebaseapp.com",
-  projectId: "misoapp-42785",
-  storageBucket: "misoapp-42785.firebasestorage.app",
-  messagingSenderId: "1072967183567",
-  appId: "1:1072967183567:web:5db3a66e0654ebc25c5bba",
-  measurementId: "G-TQT6VJXQNX",
-});
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
 
 const messaging = firebase.messaging();
 
