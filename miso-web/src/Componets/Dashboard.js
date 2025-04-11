@@ -72,7 +72,6 @@ function Dashboard() {
   const navigate = useNavigate();
   const colorMode = useContext(ColorModeContext);
 
-
   useEffect(() => {
     const fetchLowStockItems = async () => {
       const lowStockQuery = query(
@@ -270,11 +269,6 @@ function Dashboard() {
                     color="primary"
                   >
                     Create Shifts
-                  </Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button fullWidth variant="contained" color="primary">
-                    Manage Staff
                   </Button>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>

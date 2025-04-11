@@ -5,8 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { collection, getDocs, updateDoc, deleteDoc, doc, addDoc } from "firebase/firestore";
 import { useFirebase } from "./Context/firebaseContext";
-import { styled } from "@mui/material/styles";
-import { Typography, Stack, Card } from "@mui/material";
+import { Typography} from "@mui/material";
 function ShiftCalendar() {
   const { db } = useFirebase();
   const [shifts, setShifts] = useState([]);
@@ -116,15 +115,6 @@ function ShiftCalendar() {
     }
   };
   
-    const ScheduleContainer = styled(Stack)(({ theme }) => ({
-      height: "100vh",
-      minHeight: "100%",
-      padding: theme.spacing(4),
-      background:
-        theme.palette.mode === "dark"
-          ? "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))"
-          : "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-    }));
   
   return (
     <div>

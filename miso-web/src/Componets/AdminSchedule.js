@@ -45,7 +45,7 @@ function AdminSchedule() {
   // Get the start and end date of the current week (Monday to Sunday)
   function getCurrentWeekDates(date = new Date()) {
     const day = date.getDay(),
-      diff = date.getDate() - day + (day == 0 ? -6 : 1); // Adjust to Monday
+      diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
     const startOfWeek = new Date(date.setDate(diff));
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);

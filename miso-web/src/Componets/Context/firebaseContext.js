@@ -21,15 +21,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const FirebaseContext = createContext(null);
 
-// Firebase provider component
 export const FirebaseProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [messagingToken, setMessagingToken] = useState(null);
-
-  // Listen to auth state changes
+  const [loading, setLoading] = useState(true); 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setLoading(false); 
     });
     return () => unsubscribe();
   }, []);
@@ -98,7 +97,7 @@ export const FirebaseProvider = ({ children }) => {
       console.log("Unable to delete FCM Token: ", err);
     }
   };
-
+  if (loading) return <div>Loading...</div>; 
   return (
     <FirebaseContext.Provider
       value={{
@@ -109,6 +108,7 @@ export const FirebaseProvider = ({ children }) => {
         handleLogout,
         requestNotificationPermission,
         deleteFCMToken,
+        loading 
       }}
     >
       {children}
