@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -38,37 +38,34 @@ export const FirebaseProvider = ({ children }) => {
   useEffect(() => {
     if (currentUser) {
       const messaging = getMessaging(app);
-      getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
-        .then((currentToken) => {
-          if (currentToken) {
-            setMessagingToken(currentToken);
-            console.log("FCM Token: ", currentToken);
+      const fetchToken = async () => {
+        try {
+          const token = await getToken(messaging, {
+            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
+          });
+          if (token) {
+            setMessagingToken(token);
+            console.log("FCM Token: ", token);
           } else {
             console.log("No registration token available.");
           }
-        })
-        .catch((err) => {
-          console.error("An error occurred while retrieving token: ", err);
-        });
+        } catch (err) {
+          console.error("Error getting token: ", err);
+        }
+      };
+      fetchToken();
     }
   }, [currentUser]);
 
-  // Optionally refresh token manually
+  // Handle incoming messages when the app is in the foreground
   useEffect(() => {
     if (currentUser) {
       const messaging = getMessaging(app);
-      const refreshToken = async () => {
-        try {
-          const newToken = await getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY });
-          if (newToken) {
-            setMessagingToken(newToken);
-            console.log("FCM Token refreshed: ", newToken);
-          }
-        } catch (err) {
-          console.error("An error occurred while refreshing token: ", err);
-        }
-      };
-      refreshToken();
+      const unsubscribeMessage = onMessage(messaging, (payload) => {
+        console.log("Message received: ", payload);
+        // Handle the message as needed
+      });
+      return () => unsubscribeMessage();
     }
   }, [currentUser]);
 
@@ -83,8 +80,37 @@ export const FirebaseProvider = ({ children }) => {
       });
   };
 
+  const requestNotificationPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      console.log("Notification permission granted.");
+    } else {
+      console.log("Unable to get permission for notifications.");
+    }
+  };
+
+  const deleteFCMToken = async () => {
+    try {
+      const messaging = getMessaging(app);
+      await messaging.deleteToken();
+      console.log("FCM Token deleted.");
+    } catch (err) {
+      console.log("Unable to delete FCM Token: ", err);
+    }
+  };
+
   return (
-    <FirebaseContext.Provider value={{ auth, currentUser, db, messagingToken, handleLogout }}>
+    <FirebaseContext.Provider
+      value={{
+        auth,
+        currentUser,
+        db,
+        messagingToken,
+        handleLogout,
+        requestNotificationPermission,
+        deleteFCMToken,
+      }}
+    >
       {children}
     </FirebaseContext.Provider>
   );

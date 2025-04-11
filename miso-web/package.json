@@ -17,9 +17,10 @@
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.21",
     "date-fns": "^4.1.0",
-    "firebase": "^11.6.0",
+    "firebase": "^11.6.0", 
     "install": "^0.13.0",
     "npm": "^11.2.0",
+    "package-lock.json": "^1.0.0",
     "postcss": "^8.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,13 +30,14 @@
     "web-vitals": "^2.1.4",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
-    "yarn": "^1.22.22"
-  },
+    "yarn": "^1.22.22",
+    "typescript": "^4.0.0"  },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && copy firebase-messaging-sw.js build/",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "compile": "tsc"  
   },
   "eslintConfig": {
     "extends": [
@@ -56,6 +58,6 @@
     ]
   },
   "devDependencies": {
-    "tailwindcss": "^4.0.17"
+    "tailwindcss": "^4.0.17" 
   }
 }

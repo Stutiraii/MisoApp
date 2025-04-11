@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy, limit } from "firebase/firestore";
 import { useFirebase } from "./Context/firebaseContext";
-import { Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button} from "@mui/material";
 import { format, startOfWeek, endOfWeek, parseISO, isAfter } from "date-fns";
 
 function ViewSchedule() {

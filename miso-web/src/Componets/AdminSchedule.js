@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { collection, addDoc, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, getDocs} from "firebase/firestore";
 import { Grid } from "@mui/material";
 import { getAuth } from "firebase/auth";
 import {
@@ -10,7 +10,7 @@ import {
     TableContainer,
      TableHead,
       TableRow,
-       Paper, Typography, Select, MenuItem, FormControl,
+       Paper, Typography, FormControl,
   TextField,
   Button,
   Box,
@@ -23,12 +23,10 @@ import ColorModeContext from "../customizations/ColorModeContext";
 
 function AdminSchedule() {
   const { db } = useFirebase();
-  const auth = getAuth();
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
 
   // State variables
-  const [schedule, setSchedule] = useState("");
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [shifts, setShifts] = useState([]);
@@ -230,15 +228,7 @@ const handleAddRole = async () => {
     });
     return schedule;
   };
-  const handleShiftChange = (userId, day, shiftStart, shiftEnd) => {
-    setSelectedShift((prevState) => ({
-      ...prevState,
-      [userId]: {
-        ...prevState[userId],
-        [day]: { shiftStart, shiftEnd },
-      }
-    }));
-  };
+
   
 
   return (

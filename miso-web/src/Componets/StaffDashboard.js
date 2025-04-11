@@ -1,6 +1,21 @@
 import React, { useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemText, ListItemIcon, Button, Box, Grid, Card, CardContent } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Button,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChatIcon from "@mui/icons-material/Chat";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -29,19 +44,30 @@ function StaffDashboard() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Staff Dashboard
           </Typography>
-          <Button color="inherit" startIcon={<ExitToAppIcon />}>Logout</Button>
+          <Button color="inherit" startIcon={<ExitToAppIcon />}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
 
       {/* Sidebar Drawer */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
         <List>
-          <ListItem button component={Link} to="/sidebar" onClick={toggleDrawer}>
-            <ListItemIcon><ScheduleIcon /></ListItemIcon>
+          <ListItem
+            button
+            component={Link}
+            to="/sidebar"
+            onClick={toggleDrawer}
+          >
+            <ListItemIcon>
+              <ScheduleIcon />
+            </ListItemIcon>
             <ListItemText primary="Sidebar" />
           </ListItem>
           <ListItem button component={Link} to="/chat" onClick={toggleDrawer}>
-            <ListItemIcon><ChatIcon /></ListItemIcon>
+            <ListItemIcon>
+              <ChatIcon />
+            </ListItemIcon>
             <ListItemText primary="Chat" />
           </ListItem>
         </List>
@@ -50,7 +76,6 @@ function StaffDashboard() {
       {/* Main Content Layout */}
       <Box sx={{ flexGrow: 1, padding: 3 }}>
         <Grid container spacing={3}>
-    
           {/* ViewSchedule Component */}
           <Grid size={12} md={6}>
             <Card elevation={4} sx={{ height: "100%" }}>

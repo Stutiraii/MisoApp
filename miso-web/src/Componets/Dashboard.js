@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate for routin
 import AdminSchedule from "./AdminSchedule";
 import Sidebar from "./msgBar/Sidebar";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { CalendarMonth, Inventory, Schedule, AdminPanelSettings, People, AttachMoney, Warning } from "@mui/icons-material";
+import { CalendarMonth, Inventory, AdminPanelSettings, People } from "@mui/icons-material";
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography,
    Button, Grid, CardContent, Divider, CircularProgress,
    } from "@mui/material";
@@ -20,7 +20,7 @@ import ColorModeContext from "../customizations/ColorModeContext";
 
 
 function Dashboard() {
-  const { currentUser, handleLogout, firebase, db } = useFirebase(); // Accessing Firebase context
+  const { handleLogout, firebase, db } = useFirebase(); // Accessing Firebase context
   const [selectedComponent, setSelectedComponent] = useState("StaffDashboard");
   const [totalStaff, setTotalStaff] = useState(null); // State for storing the total staff count
   const [loading, setLoading] = useState(true); 
