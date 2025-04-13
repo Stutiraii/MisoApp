@@ -105,7 +105,7 @@ const Chat = () => {
             paddingRight: 1,
             marginBottom: 2,
             display: "flex",
-            flexDirection: "column-reverse", // ensures new messages appear at the bottom
+            flexDirection: "column-reverse",
           }}
         >
           <Stack spacing={2}>
@@ -180,7 +180,7 @@ const Chat = () => {
             sx={{
               backgroundColor: "#f5f5f5",
               borderRadius: "20px",
-              fontSize: "0.875rem", // adjust text size
+              fontSize: "0.875rem", 
             }}
           />
           <Button
@@ -192,7 +192,7 @@ const Chat = () => {
               borderRadius: "20px",
               padding: "8px 16px",
               boxShadow: 2,
-              fontSize: "0.875rem", // adjust button size
+              fontSize: "0.875rem", 
             }}
           >
             Send

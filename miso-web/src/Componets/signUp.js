@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useFirebase } from "./Context/firebaseContext";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"; // Import sendEmailVerification
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import { collection, doc, setDoc } from "firebase/firestore"; // ADD FIRESTORE
 import { TextField, Button, Typography, Box, FormControl, FormLabel } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
+import { useNavigate } from "react-router-dom";
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
 import ColorSelect from '../customizations/ColorSelect';
-
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -54,37 +54,52 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 }));
 
 function SignUp() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const { auth } = useFirebase(); 
+  const { auth, db } = useFirebase();  // Make sure you have db (Firestore) from context
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
     try {
-      // SignUp logic
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      // Update the user's displayName (optional but good for authentication later)
+      await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`,
+      });
 
       // Send email verification
       await sendEmailVerification(user);
 
+      // Save user info into Firestore
+      await setDoc(doc(collection(db, "users"), user.uid), {
+        uid: user.uid,
+        name: `${firstName} ${lastName}`,
+        email: user.email,
+        role: "staff", // Default role you can change
+        createdAt: new Date(),
+      });
+
       alert("Sign-up successful! Please check your email for a verification link.");
-      redirectToLogin(); 
+      redirectToLogin();
     } catch (err) {
       setError("Sign-up failed: " + err.message);
     }
   };
 
   const redirectToLogin = () => {
-    navigate("/"); 
+    navigate("/");
   };
 
   return (
@@ -114,6 +129,39 @@ function SignUp() {
             gap: 2,
           }}
         >
+          {/* First Name */}
+          <FormControl>
+            <FormLabel htmlFor="firstName">First Name</FormLabel>
+            <TextField
+              id="firstName"
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              fullWidth
+              variant="outlined"
+            />
+          </FormControl>
+
+          {/* Last Name */}
+          <FormControl>
+            <FormLabel htmlFor="lastName">Last Name</FormLabel>
+            <TextField
+              id="lastName"
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              fullWidth
+              variant="outlined"
+            />
+          </FormControl>
+
+          {/* Email */}
           <FormControl>
             <FormLabel htmlFor="email">Email</FormLabel>
             <TextField
@@ -130,6 +178,8 @@ function SignUp() {
               variant="outlined"
             />
           </FormControl>
+
+          {/* Password */}
           <FormControl>
             <FormLabel htmlFor="password">Password</FormLabel>
             <TextField
@@ -145,6 +195,8 @@ function SignUp() {
               variant="outlined"
             />
           </FormControl>
+
+          {/* Confirm Password */}
           <FormControl>
             <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
             <TextField
@@ -159,18 +211,21 @@ function SignUp() {
               variant="outlined"
             />
           </FormControl>
+
+          {/* Submit Button */}
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
-            disabled={!email || !password || !confirmPassword}
+            disabled={!firstName || !lastName || !email || !password || !confirmPassword}
             sx={{ py: 2 }}
           >
             Sign Up
           </Button>
         </Box>
 
+        {/* Already have an account link */}
         <Typography
           variant="body2"
           color="primary"

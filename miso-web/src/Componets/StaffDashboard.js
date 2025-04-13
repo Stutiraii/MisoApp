@@ -16,7 +16,7 @@ function StaffDashboard() {
       flexDirection="column"
       sx={{
         width: "100%",
-        height: "100vh", // Full screen height
+        height: "100vh",
         backgroundColor: (theme) => theme.palette.background.default,
         boxSizing: "border-box",
       }}

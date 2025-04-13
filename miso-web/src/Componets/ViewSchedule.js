@@ -39,6 +39,7 @@ function ViewSchedule() {
   const [loading, setLoading] = useState(false);
   const [totalHours, setTotalHours] = useState(null);
   const [weeklyHours, setWeeklyHours] = useState(0);
+  
 
   useEffect(() => {
     if (currentUser?.uid) {
@@ -118,7 +119,7 @@ function ViewSchedule() {
   const handleClockIn = async () => {
     setError(null);
     setLoading(true);
-    setTotalHours(null); // Reset total hours on new shift
+    setTotalHours(null);
     if (!currentUser || !currentUser.uid) {
       setError("You must be logged in to clock in.");
       setLoading(false);
@@ -183,12 +184,12 @@ function ViewSchedule() {
       await updateDoc(docRef, {
         endTime: now,
         status: "Completed",
-        totalHours: hoursWorked, // Store total hours worked
+        totalHours: hoursWorked, 
       });
 
       setIsClockedIn(false);
       setActiveDocId(null);
-      setTotalHours(hoursWorked); // Store in state for UI display
+      setTotalHours(hoursWorked);
     } catch (err) {
       setError("Error clocking out. Please try again.");
     } finally {
@@ -199,13 +200,13 @@ function ViewSchedule() {
   // Helper function to handle both ISO strings and Firestore Timestamp
   const convertToDate = (value) => {
     if (!value) return null;
-    if (typeof value === "string") return parseISO(value); // If it's a string, parse it
-    if (value.toDate) return value.toDate(); // If it's a Firestore Timestamp, convert it
+    if (typeof value === "string") return parseISO(value);
+    if (value.toDate) return value.toDate(); 
     return null;
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh",  backgroundColor: (theme) => theme.palette.background.default, }}>
       <Typography variant="h4">Your Schedule</Typography>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin]}
