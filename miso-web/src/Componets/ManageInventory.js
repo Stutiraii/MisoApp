@@ -45,7 +45,7 @@ function ManageInventory() {
   const [newCategory, setNewCategory] = useState("");
   const [sortBy, setSortBy] = useState("category");
   const [searchTerm, setSearchTerm] = useState("");
-  const [lowStockItems, setLowStockItems] = useState([]);
+  const [ lowStockItems, setLowStockItems] = useState([]);
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -161,11 +161,11 @@ function ManageInventory() {
     };
   
     fetchLowStockItems();
-  }, [db, minStock]);
+  }, [db, inventory]);
   
 
   return (
-    <Card sx={{ padding: 4, maxWidth: "100%", margin: 0, minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
+    <Card sx={{ padding: 4, Width: "100%", margin: 0, Height: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
       <Typography variant="h4" gutterBottom>
         Inventory Management
       </Typography>
@@ -197,7 +197,7 @@ function ManageInventory() {
       {/* Categories Section */}
       <Typography variant="h5" gutterBottom>Categories</Typography>
       {categories.map((cat, index) => (
-        <div key={index} style={{ marginBottom: "1rem" }}>
+        <div key={index}>
           <Typography>{cat}</Typography>
           <Button variant="contained" color="error" onClick={() => handleDeleteCategory(cat)}>
             Delete
@@ -275,6 +275,7 @@ function ManageInventory() {
         </Button>
       </form>
 
+      
       {/* Low Inventory Alert Section */}
       <Card sx={{ padding: 3, marginBottom: 2 }}>
         <Typography variant="h5" gutterBottom color="error">
