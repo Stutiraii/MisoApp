@@ -7,9 +7,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  where,
   doc,
-  query
 } from "firebase/firestore";
 import {
   Card,
@@ -146,23 +144,19 @@ function ManageInventory() {
   });
 
   useEffect(() => {
-    const fetchLowStockItems = async () => {
-      const lowStockQuery = query(
-        collection(db, "inventory"),
-        where("quantity", "<=", minStock)
-      );
-      const lowStockSnapshot = await getDocs(lowStockQuery);
-      const lowStockData = lowStockSnapshot.docs.map((doc) => ({
+    const unsubscribe = onSnapshot(collection(db, "inventory"), (snapshot) => {
+      const inventoryData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
-
-      setLowStockItems(lowStockData); // Set low-stock items state
-    };
   
-    fetchLowStockItems();
-  }, [db, inventory]);
+      const lowStockData = inventoryData.filter(item => item.quantity <= item.minStock);
+      setLowStockItems(lowStockData);
+    });
   
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
+  }, [db]);
 
   return (
     <Card sx={{ padding: 4, Width: "100%", margin: 0, Height: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
