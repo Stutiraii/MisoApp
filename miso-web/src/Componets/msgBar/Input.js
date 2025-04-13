@@ -110,39 +110,7 @@ const Input = () => {
         onChange={(e) => setText(e.target.value)}
         sx={{ marginRight: "10px" }}
       />
-
-      {/* Attach File */}
-      <IconButton
-        color="primary"
-        component="label"
-        htmlFor="file-upload"
-        sx={{ marginRight: "10px" }}
-      >
-        <AttachFileIcon />
-        <input
-          type="file"
-          id="file-upload"
-          hidden
-          onChange={(e) => setImg(e.target.files[0])}
-        />
-      </IconButton>
-
-      {/* Upload Image */}
-      <IconButton
-        color="primary"
-        component="label"
-        htmlFor="file-upload"
-        sx={{ marginRight: "10px" }}
-      >
-        <PhotoCameraIcon />
-        <input
-          type="file"
-          id="file-upload"
-          hidden
-          onChange={(e) => setImg(e.target.files[0])}
-        />
-      </IconButton>
-
+      
       {/* Send Button */}
       <Button
         variant="contained"

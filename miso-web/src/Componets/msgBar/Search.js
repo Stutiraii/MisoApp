@@ -2,12 +2,13 @@ import React, { useContext, useState, useEffect } from "react";
 import { useFirebase } from "../Context/firebaseContext";
 import {
   Box,
-  Button,
+  ListItemButton,
   TextField,
   Typography,
   CircularProgress,
   List,
   ListItem,
+  Button,
   ListItemAvatar,
   ListItemText,
   Avatar,
@@ -151,10 +152,13 @@ const Search = () => {
       <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
         <Button
           variant="contained"
-          fontWeight="bold"
           onClick={handleSearch}
-          sx={{ width: "150px" }}
-          color="black"
+          sx={{
+            width: "150px",
+            fontWeight: "bold",
+            backgroundColor: "black",
+            "&:hover": { backgroundColor: "#333" },
+          }}
           disabled={loading}
         >
           {loading ? <CircularProgress size={24} /> : "Search"}
@@ -176,24 +180,23 @@ const Search = () => {
         </Typography>
         <List>
           {allUsers.map((user) => (
-            <ListItem
-              key={user.uid}
-              button
-              onClick={() => handleSelect(user)}
-              sx={{
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: "action.hover",
-                },
-              }}
-            >
-              <ListItemAvatar>
-                <Avatar src={user.photoURL || ""}>
-                  {user.name?.charAt(0)}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={user.name} />
-            </ListItem>
+           <ListItemButton
+           key={user.uid}
+           onClick={() => handleSelect(user)}
+           sx={{
+             borderRadius: 2,
+             "&:hover": {
+               backgroundColor: "action.hover",
+             },
+           }}
+         >
+           <ListItemAvatar>
+             <Avatar src={user.photoURL || ""}>
+               {user.name?.charAt(0)}
+             </Avatar>
+           </ListItemAvatar>
+           <ListItemText primary={user.name} />
+         </ListItemButton>
           ))}
         </List>
       </Paper>

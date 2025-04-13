@@ -19,6 +19,19 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
+// Chat Container Styles
+const ChatContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+  maxHeight: "100%",
+  width: "100%",
+  border: "1px solid",
+  alignItems: "center",
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+}));
+
 const Chat = () => {
   const { data } = useContext(MsgContext);
   const { selectedUser } = data;
@@ -65,19 +78,6 @@ const Chat = () => {
 
     setNewMsg("");
   };
-
-  // Chat Container Styles
-  const ChatContainer = styled(Box)(({ theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    maxHeight: "100%",
-    width: "100%",
-    border: "1px solid",
-    alignItems: "center",
-    padding: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-  }));
 
   return selectedUser ? (
     <ChatContainer>

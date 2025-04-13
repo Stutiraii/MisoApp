@@ -6,8 +6,7 @@ import {
   IconButton,
   Tooltip,
   useMediaQuery,
-  useTheme,
-  Stack,
+  useTheme
 } from "@mui/material";
 import Search from "./Search";
 import Chat from "./Chat";
@@ -16,31 +15,6 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { styled } from "@mui/material/styles";
 
-const Messages = () => {
-  const [themeMode, setThemeMode] = useState("dark");
-  const isMobile = useMediaQuery("(max-width:768px)");
-  const theme = useTheme();
-  const { data } = useContext(MsgContext);
-  const { selectedUser } = data;
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("themeMode");
-    if (savedTheme) setThemeMode(savedTheme);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = themeMode === "dark" ? "light" : "dark";
-    setThemeMode(newTheme);
-    localStorage.setItem("themeMode", newTheme);
-  };
-
-  const bgColor = themeMode === "dark" ? "#black" : "#f9f9f9";
-  const sidebarColor = themeMode === "dark" ? "#1e1e1e" : "#ffffff";
-  const textColor = themeMode === "dark" ? "#ffffff" : "#333333";
-  const primaryColor = themeMode === "dark" ? "black" : "#1976d2";
-
-
- // Add this CSS at the top
 const MessagesContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "row",
@@ -65,6 +39,24 @@ const ChatArea = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
 }));
+
+const Messages = () => {
+  const [themeMode, setThemeMode] = useState("dark");
+  const isMobile = useMediaQuery("(max-width:768px)");
+  const theme = useTheme();
+  const { data } = useContext(MsgContext);
+  const { selectedUser } = data;
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("themeMode");
+    if (savedTheme) setThemeMode(savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = themeMode === "dark" ? "light" : "dark";
+    setThemeMode(newTheme);
+    localStorage.setItem("themeMode", newTheme);
+  };
 
   return (
     <MessagesContainer>
