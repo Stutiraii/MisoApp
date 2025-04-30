@@ -327,7 +327,6 @@ function AdminSchedule() {
                   name="newRole"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
-                  required
                   fullWidth
                   variant="outlined"
                   placeholder="Type or select a role"
