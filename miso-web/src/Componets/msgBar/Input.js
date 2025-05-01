@@ -13,15 +13,13 @@ import { v4 as uuid } from "uuid";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 // Material UI Components
-import { TextField, Button, IconButton, CircularProgress } from "@mui/material";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import { TextField, Button, CircularProgress } from "@mui/material";
 
 const Input = () => {
   const { db, storage, currentUser } = useFirebase();
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
-  const [loading, setLoading] = useState(false); // Loading state for file uploads
+  const [loading, setLoading] = useState(false); // Loading state for send button
 
   const { data } = useContext(MsgContext);
 

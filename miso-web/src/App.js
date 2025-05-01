@@ -10,7 +10,7 @@ import ViewSchedule from "./Componets/ViewSchedule"; // Import ViewSchedule
 import ManageInventory from "./Componets/ManageInventory"; // Import ManageInventory
 import Sidebar from "./Componets/msgBar/Messages";
 import Chat from "./Componets/msgBar/Chat";
-import { MsgContextProvider } from "./Componets/Context/MsgContext";
+import { MsgContextProvider } from "./Componets/msgBar/MsgContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ColorModeProvider } from "./customizations/ColorModeContext";
 
@@ -63,7 +63,7 @@ function App() {
             </MsgContextProvider>
           }
         />  
-          <Route
+          <Route 
           path="/ManageInventory"
           element={<PrivateRoute user={user} element={<ManageInventory />} />}
         />

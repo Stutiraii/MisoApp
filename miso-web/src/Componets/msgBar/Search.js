@@ -23,11 +23,12 @@ import {
   doc,
   setDoc,
   updateDoc,
+  onSnapshot,
   serverTimestamp,
   getDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { MsgContext } from "../Context/MsgContext";
+import { MsgContext } from "./MsgContext";
 
 const Search = () => {
   const { db } = useFirebase();
@@ -128,8 +129,9 @@ const Search = () => {
           [`${combinedId}.date`]: serverTimestamp(),
         });
       }
-
+      // Set the selected user in the context
       setSelectedUser(user);
+
       setUsername("");
     } catch (error) {
       console.error("Error handling chat selection:", error);

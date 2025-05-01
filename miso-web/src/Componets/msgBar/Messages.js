@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import Search from "./Search";
 import Chat from "./Chat";
-import { MsgContext } from "../Context/MsgContext";
+import { MsgContext } from "./MsgContext";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { styled } from "@mui/material/styles";

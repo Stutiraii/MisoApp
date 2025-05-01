@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
-import { MsgContext } from "../Context/MsgContext";
+import { MsgContext } from "./MsgContext";
 import { getAuth } from "firebase/auth";
 import {
   doc,

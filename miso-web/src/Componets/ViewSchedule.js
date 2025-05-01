@@ -159,7 +159,7 @@ function ViewSchedule() {
       const now = new Date().toISOString();
       const docRef = doc(db, "attendance", activeDocId);
 
-      // Fetch the start time from Firebase
+      // Fetch start time from Firebase
       const q = query(
         collection(db, "attendance"),
         where("userId", "==", currentUser.uid),

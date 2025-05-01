@@ -30,7 +30,7 @@ import {
   CircularProgress,
   Card as MuiCard,
 } from "@mui/material";
-import { getDocs, where, query, collection } from "firebase/firestore";
+import { getDocs, where, query, collection,onSnapshot } from "firebase/firestore";
 import { styled, useTheme } from "@mui/material/styles";
 import ViewSchedule from "./ViewSchedule";
 import Stack from "@mui/material/Stack";
@@ -67,27 +67,28 @@ function Dashboard() {
   const [totalStaff, setTotalStaff] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lowStockItems, setLowStockItems] = useState([]);
-  const [minStock, setMinStock] = useState(1);
+  const [minStock, setMinStock] = useState(5);
   const theme = useTheme();
   const navigate = useNavigate();
   const colorMode = useContext(ColorModeContext);
 
   useEffect(() => {
-    const fetchLowStockItems = async () => {
-      const lowStockQuery = query(
-        collection(db, "inventory"),
-        where("quantity", "<=", minStock)
-      );
-      const lowStockSnapshot = await getDocs(lowStockQuery);
-      const lowStockData = lowStockSnapshot.docs.map((doc) => ({
+    const lowStockQuery = query(
+      collection(db, "inventory"),
+      where("quantity", "<=", minStock)
+    );
+  
+    const unsubscribe = onSnapshot(lowStockQuery, (snapshot) => {
+      const lowStockData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setLowStockItems(lowStockData);
-    };
-    fetchLowStockItems();
+    });
+  
+    return () => unsubscribe(); // Clean up listener when component unmounts
   }, [db, minStock]);
-
+  
   const components = {
     StaffDashboard: <StaffDashboard />,
     ManageInventory: <ManageInventory />,
